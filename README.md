@@ -4,9 +4,7 @@
 
 NourishLink is a comprehensive food pantry management system designed to streamline operations and improve access to food resources for communities in need. The system provides tools for inventory management, distribution tracking, and reporting.
 
-## CPS 310 Project
-
-This project is developed as part of the CPS 310 coursework.
+## This project is developed as part of the CPS 310 coursework at University of Dayton.
 
 ## Features
 
