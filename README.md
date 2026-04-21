@@ -1,43 +1,101 @@
 # NourishLink
 
-## Overview
-
-NourishLink is a comprehensive food pantry management system designed to streamline operations and improve access to food resources for communities in need. The system provides tools for inventory management, distribution tracking, and reporting.
-
-## This project is developed as part of the CPS 310 coursework at University of Dayton.
+A MERN stack web application for community food pantry management.
 
 ## Features
 
-- **Inventory Management**: Track food items, quantities, and expiration dates
-- **Distribution Tracking**: Monitor food distribution and usage patterns
-- **User Management**: Manage staff and volunteer access
-- **Reporting**: Generate reports on inventory levels and distribution metrics
-- **Search & Filter**: Easily find and organize pantry items
+- Multi-role authentication (Staff, Client, Donor, Volunteer)
+- Client intake and eligibility management
+- Food pickup appointments
+- Inventory tracking and audits
+- Donation logging and donor history
+- Volunteer scheduling and attendance
+- Reporting dashboard
+
+## Tech Stack
+
+### Frontend
+- React + Vite
+- React Router
+- Axios
+- Tailwind CSS
+- React Hook Form
+- TanStack Query
+
+### Backend
+- Node.js
+- Express.js
+- Mongoose
+- JWT authentication
+- bcrypt
+- multer (for document uploads)
+
+### Database
+- MongoDB Atlas
 
 ## Getting Started
 
 ### Prerequisites
-
-- [Add relevant requirements here]
+- Node.js (v18 or higher)
+- npm or yarn
+- MongoDB Atlas account
 
 ### Installation
 
 1. Clone the repository
-2. [Add installation steps]
-3. [Add any setup commands]
+2. Install dependencies for both client and server
+3. Set up environment variables
+4. Start the development servers
 
-### Usage
+### Environment Variables
 
-[Add usage instructions]
+Create `.env` files in both client and server directories:
+
+#### Server `.env`
+```
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+NODE_ENV=development
+```
+
+#### Client `.env`
+```
+VITE_API_URL=http://localhost:5000
+```
 
 ## Project Structure
 
-[Add directory structure overview]
-
-## Contributing
-
-[Add contribution guidelines if applicable]
-
-## License
-
-[Add license information]
+```
+nourishlink/
+  client/
+    src/
+      api/
+      components/
+      pages/
+        auth/
+        dashboard/
+        clients/
+        donors/
+        volunteers/
+        inventory/
+        appointments/
+        reports/
+      context/
+      hooks/
+      layouts/
+      utils/
+      App.jsx
+      main.jsx
+  server/
+    src/
+      config/
+      controllers/
+      middleware/
+      models/
+      routes/
+      services/
+      utils/
+      app.js
+      server.js
+```
