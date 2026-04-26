@@ -1,12 +1,17 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
 const Layout = ({ children }) => {
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const [userRole, setUserRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    setUserRole(role);
+    setIsLoading(false);
+  }, []);
 
   if (isLoading) {
     return (
@@ -20,8 +25,8 @@ const Layout = ({ children }) => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="flex">
-        {isAuthenticated && <Sidebar userRole={user?.role} />}
-        <main className={`flex-1 ${isAuthenticated ? 'ml-64' : ''}`}>
+        {userRole && <Sidebar userRole={userRole} />}
+        <main className={`flex-1 ${userRole ? 'ml-64' : ''}`}>
           <div className="p-6">
             {children}
           </div>

@@ -5,7 +5,6 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 // Import routes
-// const authRoutes = require('./routes/auth');
 // const clientRoutes = require('./routes/clients');
 // const appointmentRoutes = require('./routes/appointments');
 // const inventoryRoutes = require('./routes/inventory');
@@ -37,7 +36,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API Routes
-// app.use('/api/auth', authRoutes);
 // app.use('/api/clients', clientRoutes);
 // app.use('/api/appointments', appointmentRoutes);
 // app.use('/api/inventory', inventoryRoutes);

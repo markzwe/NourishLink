@@ -1,21 +1,28 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState } from 'react';
+import { Link, Navigate } from 'react-router-dom';
 
 const Home = () => {
-  const { isAuthenticated, user } = useAuth();
+  const [userRole, setUserRole] = useState(null);
+  const [userName, setUserName] = useState(null);
 
-  if (isAuthenticated) {
+  useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    const name = localStorage.getItem('userName');
+    setUserRole(role);
+    setUserName(name);
+  }, []);
+
+  if (userRole) {
     return (
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Welcome back, {user?.firstName}!
+          Welcome back, {userName}!
         </h1>
         <p className="text-lg text-gray-600 mb-8">
           Navigate to your dashboard using the menu above.
         </p>
         <Link
-          to={`/${user.role}/dashboard`}
+          to={`/${userRole}/dashboard`}
           className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700"
         >
           Go to Dashboard
@@ -39,13 +46,7 @@ const Home = () => {
             to="/login"
             className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700"
           >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="bg-green-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-green-700"
-          >
-            Register
+            Get Started
           </Link>
         </div>
       </div>

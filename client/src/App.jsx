@@ -1,13 +1,11 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AuthProvider } from './context/AuthContext'
 import Layout from './layouts/Layout'
 
 // Import pages
 import Home from './pages/Home'
 import Login from './pages/auth/Login'
-import Register from './pages/auth/Register'
 
 // Client pages
 import ClientDashboard from './pages/dashboard/ClientDashboard'
@@ -45,49 +43,46 @@ const queryClient = new QueryClient()
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <Layout>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+      <Router>
+        <Layout>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
 
-              {/* Client Routes */}
-              <Route path="/client/dashboard" element={<ClientDashboard />} />
-              <Route path="/client/register" element={<ClientRegistration />} />
-              <Route path="/client/upload-documents" element={<UploadDocuments />} />
-              <Route path="/client/appointments" element={<MyAppointments />} />
-              <Route path="/client/profile" element={<UpdateProfile />} />
+            {/* Client Routes */}
+            <Route path="/client/dashboard" element={<ClientDashboard />} />
+            <Route path="/client/register" element={<ClientRegistration />} />
+            <Route path="/client/upload-documents" element={<UploadDocuments />} />
+            <Route path="/client/appointments" element={<MyAppointments />} />
+            <Route path="/client/profile" element={<UpdateProfile />} />
 
-              {/* Donor Routes */}
-              <Route path="/donor/dashboard" element={<DonorDashboard />} />
-              <Route path="/donor/log-donation" element={<LogDonation />} />
-              <Route path="/donor/history" element={<DonationHistory />} />
-              <Route path="/donor/schedule-dropoff" element={<ScheduleDropoff />} />
-              <Route path="/donor/receipts" element={<Receipts />} />
-              <Route path="/donor/contact" element={<ContactStaff />} />
+            {/* Donor Routes */}
+            <Route path="/donor/dashboard" element={<DonorDashboard />} />
+            <Route path="/donor/log-donation" element={<LogDonation />} />
+            <Route path="/donor/history" element={<DonationHistory />} />
+            <Route path="/donor/schedule-dropoff" element={<ScheduleDropoff />} />
+            <Route path="/donor/receipts" element={<Receipts />} />
+            <Route path="/donor/contact" element={<ContactStaff />} />
 
-              {/* Volunteer Routes */}
-              <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
-              <Route path="/volunteer/shifts" element={<AvailableShifts />} />
-              <Route path="/volunteer/my-shifts" element={<MyShifts />} />
-              <Route path="/volunteer/tasks" element={<Tasks />} />
-              <Route path="/volunteer/history" element={<VolunteerHistory />} />
+            {/* Volunteer Routes */}
+            <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
+            <Route path="/volunteer/shifts" element={<AvailableShifts />} />
+            <Route path="/volunteer/my-shifts" element={<MyShifts />} />
+            <Route path="/volunteer/tasks" element={<Tasks />} />
+            <Route path="/volunteer/history" element={<VolunteerHistory />} />
 
-              {/* Staff Routes */}
-              <Route path="/staff/dashboard" element={<StaffDashboard />} />
-              <Route path="/staff/applications" element={<PendingApplications />} />
-              <Route path="/staff/inventory/categories" element={<InventoryCategories />} />
-              <Route path="/staff/inventory/audit" element={<InventoryAudit />} />
-              <Route path="/staff/donations" element={<IncomingDonations />} />
-              <Route path="/staff/volunteers" element={<VolunteerAssignments />} />
-              <Route path="/staff/reports" element={<ReportsCenter />} />
-            </Routes>
-          </Layout>
-        </Router>
-      </AuthProvider>
+            {/* Staff Routes */}
+            <Route path="/staff/dashboard" element={<StaffDashboard />} />
+            <Route path="/staff/applications" element={<PendingApplications />} />
+            <Route path="/staff/inventory/categories" element={<InventoryCategories />} />
+            <Route path="/staff/inventory/audit" element={<InventoryAudit />} />
+            <Route path="/staff/donations" element={<IncomingDonations />} />
+            <Route path="/staff/volunteers" element={<VolunteerAssignments />} />
+            <Route path="/staff/reports" element={<ReportsCenter />} />
+          </Routes>
+        </Layout>
+      </Router>
     </QueryClientProvider>
   )
 }

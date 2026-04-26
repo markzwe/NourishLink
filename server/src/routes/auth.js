@@ -36,13 +36,15 @@ const registerValidation = [
 ];
 
 const loginValidation = [
-  body('email')
-    .isEmail()
-    .withMessage('Please provide a valid email')
-    .normalizeEmail(),
-  body('password')
+  body('name')
+    .trim()
     .notEmpty()
-    .withMessage('Password is required'),
+    .withMessage('Name is required')
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Name must be between 2 and 100 characters'),
+  body('role')
+    .isIn(['staff', 'client', 'donor', 'volunteer'])
+    .withMessage('Role must be staff, client, donor, or volunteer'),
 ];
 
 // Routes

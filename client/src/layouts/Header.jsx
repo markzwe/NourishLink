@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const [userRole, setUserRole] = useState(null);
+  const [userName, setUserName] = useState(null);
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    const name = localStorage.getItem('userName');
+    setUserRole(role);
+    setUserName(name);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
+    window.location.href = '/login';
+  };
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -21,10 +34,10 @@ const Header = () => {
             <Link to="/" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">
               Home
             </Link>
-            {isAuthenticated ? (
+            {userRole ? (
               <>
                 <Link 
-                  to={`/${user.role}/dashboard`} 
+                  to={`/${userRole}/dashboard`} 
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
                 >
                   Dashboard
@@ -33,26 +46,23 @@ const Header = () => {
             ) : (
               <>
                 <Link to="/login" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">
-                  Login
-                </Link>
-                <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                  Register
+                  Get Started
                 </Link>
               </>
             )}
           </nav>
 
           {/* User menu */}
-          {isAuthenticated && (
+          {userRole && (
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-700">
-                Welcome, {user?.firstName} {user?.lastName}
+                Welcome, {userName}
               </span>
               <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                {user?.role}
+                {userRole}
               </span>
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="text-sm text-gray-700 hover:text-red-600"
               >
                 Logout
