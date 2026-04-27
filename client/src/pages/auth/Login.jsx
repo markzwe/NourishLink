@@ -20,9 +20,27 @@ const Login = () => {
     localStorage.setItem('userName', data.name);
     
     // Navigate to main dashboard
-    navigate('/');
+    navigageToDashboard(data.role);
     
     setIsSubmitting(false);
+  };
+  const navigageToDashboard = (role) => {
+    switch (role) {
+      case 'staff':
+        navigate('/staff/dashboard');
+        break;
+      case 'client':
+        navigate('/client/dashboard');
+        break;
+      case 'donor':
+        navigate('/donor/dashboard');
+        break;
+      case 'volunteer':
+        navigate('/volunteer/dashboard');
+        break;
+      default:
+        navigate('/');
+    }
   };
 
   return (
