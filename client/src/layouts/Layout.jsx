@@ -6,12 +6,30 @@ import Footer from './Footer';
 const Layout = ({ children }) => {
   const [userRole, setUserRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(0);
 
   useEffect(() => {
     const role = localStorage.getItem('userRole');
     setUserRole(role);
+
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setWindowWidth(width);
+      setSidebarOpen(width >= 768);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
     setIsLoading(false);
+
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prevOpen) => !prevOpen);
+  };
 
   if (isLoading) {
     return (
@@ -21,12 +39,34 @@ const Layout = ({ children }) => {
     );
   }
 
+  const isMobile = windowWidth < 768;
+  const mainContentClass = `flex-1 ${userRole && !isMobile ? 'ml-64' : ''}`;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header
+        isMobile={isMobile}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={toggleSidebar}
+      />
       <div className="flex">
-        {userRole && <Sidebar userRole={userRole} />}
-        <main className={`flex-1 ${userRole ? 'ml-64' : ''}`}>
+        {userRole && (
+          <Sidebar
+            userRole={userRole}
+            isOpen={sidebarOpen}
+            isMobile={isMobile}
+            onClose={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {userRole && isMobile && sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/30 z-30"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        <main className={mainContentClass}>
           <div className="p-6">
             {children}
           </div>

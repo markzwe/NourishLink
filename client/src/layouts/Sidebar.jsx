@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const Sidebar = ({ userRole }) => {
+const Sidebar = ({ userRole, isOpen, isMobile, onClose }) => {
   const location = useLocation();
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const isActive = (path) => location.pathname.startsWith(path);
 
@@ -58,23 +59,42 @@ const Sidebar = ({ userRole }) => {
 
   const links = getLinks();
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const sidebarTransform = isMobile
+    ? isOpen
+      ? 'translate-x-0'
+      : '-translate-x-full'
+    : 'translate-y-0';
+
   return (
-    <aside className="w-64 bg-white shadow-md h-screen fixed left-0 top-16">
+    <aside
+      className={`fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-64 overflow-y-auto bg-white transition-transform duration-300 ease-in-out ${sidebarTransform} ${isScrolled ? 'shadow-xl bg-white/95' : 'shadow-md'}`}
+    >
       <nav className="mt-8">
-        <div className="px-4 space-y-2">
+        <div className="px-4 space-y-2 pb-6">
           {links.map((link) => (
             <Link
               key={link.path}
               to={link.path}
-              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                isActive(link.path)
-                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-              }`}
+              onClick={() => {
+                if (isMobile && onClose) {
+                  onClose();
+                }
+              }}
+              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive(link.path)
+                ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                }`}
             >
-              <span className="mr-3 text-lg">
-                {link.icon}
-              </span>
+              <span className="material-icons mr-3 text-lg align-middle">{link.icon}</span>
               {link.label}
             </Link>
           ))}
