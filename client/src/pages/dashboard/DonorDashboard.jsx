@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAuth } from '../../context/AuthContext';
+// import { useAuth } from '../../context/AuthContext';
 
 const DonorDashboard = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   return (
     <div>
