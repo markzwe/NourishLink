@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 const Login = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const {
     register,
     handleSubmit,
@@ -14,17 +14,17 @@ const Login = () => {
 
   const onSubmit = (data) => {
     setIsSubmitting(true);
-    
+
     // Store role in localStorage for simple role-based access
     localStorage.setItem('userRole', data.role);
     localStorage.setItem('userName', data.name);
-    
+
     // Navigate to main dashboard
-    navigageToDashboard(data.role);
-    
+    navigateToDashboard(data.role);
+
     setIsSubmitting(false);
   };
-  const navigageToDashboard = (role) => {
+  const navigateToDashboard = (role) => {
     switch (role) {
       case 'staff':
         navigate('/staff/dashboard');
@@ -48,21 +48,18 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Select Your Role
+           Login
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your name and select your role to continue
-          </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
+                Email address
               </label>
               <input
-                {...register('name', {
+                {...register('email', {
                   required: 'Name is required',
                   minLength: {
                     value: 2,
@@ -72,10 +69,32 @@ const Login = () => {
                 type="text"
                 autoComplete="name"
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your full name"
+                placeholder="Enter email address"
               />
               {errors.name && (
                 <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              )}
+            </div>
+             {/* Password */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <input
+                {...register('password', {
+                  required: 'Password is required',
+                  minLength: {
+                    value: 6,
+                    message: 'Password must be at least 6 characters',
+                  },
+                })}
+                type="password"
+                autoComplete="current-password"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Enter your password"
+              />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
             <div>
@@ -108,6 +127,16 @@ const Login = () => {
             >
               {isSubmitting ? 'Entering...' : 'Continue'}
             </button>
+          </div>
+          {/* Link to register page */}
+          <div className="text-sm text-center">
+            Don't have an account?{' '}
+            <a
+              href="/register"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
+              Register here
+            </a>
           </div>
         </form>
       </div>
