@@ -54,7 +54,6 @@ const Home = () => {
       {/* Features Section */}
       <div className="grid md:grid-cols-3 gap-8 mb-16">
         <div className="text-center p-6 bg-white rounded-lg shadow-md">
-          <div className="text-4xl mb-4">family_restroom</div>
           <h3 className="text-xl font-semibold mb-2">For Clients</h3>
           <p className="text-gray-600">
             Register for services, upload eligibility documents, and schedule pickup appointments.
@@ -62,7 +61,6 @@ const Home = () => {
         </div>
         
         <div className="text-center p-6 bg-white rounded-lg shadow-md">
-          <div className="text-4xl mb-4">volunteer_activism</div>
           <h3 className="text-xl font-semibold mb-2">For Donors</h3>
           <p className="text-gray-600">
             Log donations, schedule drop-offs, and track your contribution history.
@@ -70,7 +68,6 @@ const Home = () => {
         </div>
         
         <div className="text-center p-6 bg-white rounded-lg shadow-md">
-          <div className="text-4xl mb-4">people</div>
           <h3 className="text-xl font-semibold mb-2">For Volunteers</h3>
           <p className="text-gray-600">
             Sign up for shifts, track hours, and help serve your community.
