@@ -6,6 +6,7 @@ import Layout from './layouts/Layout'
 // Import pages
 import Home from './pages/Home'
 import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
 
 // Client pages
 import ClientDashboard from './pages/dashboard/ClientDashboard'
@@ -49,6 +50,7 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
             {/* Client Routes */}
             <Route path="/client/dashboard" element={<ClientDashboard />} />

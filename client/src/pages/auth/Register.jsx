@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useAuth } from '../../context/AuthContext';
 
 const Register = () => {
-  const { register: registerUser, isAuthenticated, isLoading, error, clearError } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [successMessage, setSuccessMessage] = useState('');
+
   const {
     register,
     handleSubmit,
@@ -16,22 +15,16 @@ const Register = () => {
 
   const password = watch('password');
 
-  const onSubmit = async (data) => {
+  const onSubmit = (data) => {
     setIsSubmitting(true);
-    clearError();
-    
-    const result = await registerUser(data);
-    
-    if (result.success) {
-      // Navigation will be handled by AuthContext state change
-    }
-    
-    setIsSubmitting(false);
-  };
+    setSuccessMessage('');
 
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
+    console.log('Dummy register form submitted', data);
+    setTimeout(() => {
+      setSuccessMessage('Registration submitted successfully. This is a dummy page.');
+      setIsSubmitting(false);
+    }, 500);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -50,7 +43,7 @@ const Register = () => {
             </Link>
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -70,7 +63,7 @@ const Register = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
                 )}
               </div>
-              
+
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
                   Last Name
@@ -173,19 +166,19 @@ const Register = () => {
             </div>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-              {error}
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+              {successMessage}
             </div>
           )}
 
           <div>
             <button
               type="submit"
-              disabled={isSubmitting || isLoading}
+              disabled={isSubmitting}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isSubmitting || isLoading ? 'Creating account...' : 'Create account'}
+              {isSubmitting ? 'Creating account...' : 'Create account'}
             </button>
           </div>
         </form>
