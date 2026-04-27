@@ -53,7 +53,7 @@ const LogDonation = () => {
 
   if (submitSuccess) {
     return (
-      <div className="max-w-2xl mx-auto">
+     <div style={{ padding: "20px", background: "white" }}>
         <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-green-800 mb-4">Donation Logged Successfully!</h2>
           <p className="text-green-700 mb-6">

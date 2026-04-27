@@ -72,7 +72,7 @@ const DonationHistory = () => {
   const completedDonations = donations.filter(d => d.status === 'completed').length;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div style={{ padding: "20px", background: "white" }}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Donation History</h1>
         <p className="text-gray-600 mt-2">View and manage your donation records.</p>

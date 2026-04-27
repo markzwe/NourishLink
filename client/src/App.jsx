@@ -15,7 +15,7 @@ import MyAppointments from './pages/clients/MyAppointments'
 import UpdateProfile from './pages/clients/UpdateProfile'
 
 // Donor pages
-import DonorDashboard from './pages/dashboard/DonorDashboard'
+import DonorDashboard from './pages/donors/DonorDashboard'
 import LogDonation from './pages/donors/LogDonation'
 import DonationHistory from './pages/donors/DonationHistory'
 import ScheduleDropoff from './pages/donors/ScheduleDropoff'

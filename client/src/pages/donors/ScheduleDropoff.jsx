@@ -40,7 +40,7 @@ const ScheduleDropoff = () => {
 
   if (submitSuccess) {
     return (
-      <div className="max-w-2xl mx-auto">
+      <div style={{ padding: "20px", background: "white" }}>
         <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-green-800 mb-4">Drop-off Scheduled Successfully!</h2>
           <p className="text-green-700 mb-6">
@@ -58,7 +58,7 @@ const ScheduleDropoff = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div style={{ padding: "20px", background: "white" }}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Schedule Drop-off</h1>
         <p className="text-gray-600 mt-2">Schedule a time to drop off your donation.</p>
