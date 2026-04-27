@@ -1,14 +1,14 @@
 import React from 'react';
-import { useAuth } from '../../context/AuthContext';
+// import { useAuth } from '../../context/AuthContext';
 
 const StaffDashboard = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   return (
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Staff Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome back, {user?.firstName}!</p>
+        {/* <p className="text-gray-600 mt-2">Welcome back, {user?.firstName}!</p> */}
       </div>
 
       {/* Quick Stats */}

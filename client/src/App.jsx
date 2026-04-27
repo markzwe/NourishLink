@@ -6,6 +6,7 @@ import Layout from './layouts/Layout'
 // Import pages
 import Home from './pages/Home'
 import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
 
 // Client pages
 import ClientDashboard from './pages/dashboard/ClientDashboard'
@@ -15,7 +16,7 @@ import MyAppointments from './pages/clients/MyAppointments'
 import UpdateProfile from './pages/clients/UpdateProfile'
 
 // Donor pages
-import DonorDashboard from './pages/dashboard/DonorDashboard'
+import DonorDashboard from './pages/donors/DonorDashboard'
 import LogDonation from './pages/donors/LogDonation'
 import DonationHistory from './pages/donors/DonationHistory'
 import ScheduleDropoff from './pages/donors/ScheduleDropoff'
@@ -49,6 +50,7 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
             {/* Client Routes */}
             <Route path="/client/dashboard" element={<ClientDashboard />} />
