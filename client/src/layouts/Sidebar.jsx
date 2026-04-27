@@ -4,7 +4,14 @@ import { Link, useLocation } from 'react-router-dom';
 const Sidebar = ({ userRole, isOpen, isMobile, onClose }) => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
 
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const isActive = (path) => location.pathname.startsWith(path);
 
   const clientLinks = [
