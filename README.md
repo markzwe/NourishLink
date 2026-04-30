@@ -53,9 +53,8 @@ Create `.env` files in both client and server directories:
 
 #### Server `.env`
 ```
-PORT=5000
+PORT=5001
 MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
 NODE_ENV=development
 ```
 
@@ -87,6 +86,7 @@ nourishlink/
       utils/
       App.jsx
       main.jsx
+      .env
   server/
     src/
       config/
@@ -98,4 +98,5 @@ nourishlink/
       utils/
       app.js
       server.js
+      .env
 ```
