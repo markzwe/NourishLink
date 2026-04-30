@@ -10,7 +10,7 @@ router.use(auth);
 // @desc    Create donor profile
 // @route   POST /api/donors
 // @access  Private (Donor)
-router.post('/', authorize('donor'), async (req, res, next) => {
+router.post('/donors', authorize('donor'), async (req, res, next) => {
   try {
     // Check if donor profile already exists
     const existingProfile = await DonorProfile.findOne({ userId: req.user.id });
@@ -38,7 +38,7 @@ router.post('/', authorize('donor'), async (req, res, next) => {
 // @desc    Get donor profile
 // @route   GET /api/donors/:id
 // @access  Private (Donor/Staff)
-router.get('/:id', async (req, res, next) => {
+router.get('/donors/:id', async (req, res, next) => {
   try {
     const donorProfile = await DonorProfile.findById(req.params.id)
       .populate('userId', 'firstName lastName email');
@@ -70,7 +70,7 @@ router.get('/:id', async (req, res, next) => {
 // @desc    Update donor profile
 // @route   PATCH /api/donors/:id
 // @access  Private (Donor/Staff)
-router.patch('/:id', async (req, res, next) => {
+router.patch('/donors/:id', async (req, res, next) => {
   try {
     let donorProfile = await DonorProfile.findById(req.params.id);
 

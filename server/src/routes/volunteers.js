@@ -10,7 +10,7 @@ router.use(auth);
 // @desc    Create volunteer profile
 // @route   POST /api/volunteers
 // @access  Private (Volunteer)
-router.post('/', authorize('volunteer'), async (req, res, next) => {
+router.post('/volunteers', authorize('volunteer'), async (req, res, next) => {
   try {
     // Check if volunteer profile already exists
     const existingProfile = await VolunteerProfile.findOne({ userId: req.user.id });
@@ -38,7 +38,7 @@ router.post('/', authorize('volunteer'), async (req, res, next) => {
 // @desc    Get volunteer profile
 // @route   GET /api/volunteers/:id
 // @access  Private (Volunteer/Staff)
-router.get('/:id', async (req, res, next) => {
+router.get('/volunteers/:id', async (req, res, next) => {
   try {
     const volunteerProfile = await VolunteerProfile.findById(req.params.id)
       .populate('userId', 'firstName lastName email');
@@ -70,7 +70,7 @@ router.get('/:id', async (req, res, next) => {
 // @desc    Update volunteer profile
 // @route   PATCH /api/volunteers/:id
 // @access  Private (Volunteer/Staff)
-router.patch('/:id', async (req, res, next) => {
+router.patch('/volunteers/:id', async (req, res, next) => {
   try {
     let volunteerProfile = await VolunteerProfile.findById(req.params.id);
 

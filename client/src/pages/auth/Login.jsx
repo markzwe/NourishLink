@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { authAPI } from '../../api/auth';
 
 const Login = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const {
     register,
@@ -12,35 +14,39 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setIsSubmitting(true);
+    setLoginError('');
 
-    // Store role in localStorage for simple role-based access
-    localStorage.setItem('userRole', data.role);
-    localStorage.setItem('userName', data.name);
+    try {
+      // Call the actual API
+      const response = await authAPI.login({
+        email: data.email,
+        password: data.password
+      });
+      
+      if (response.data.success) {
+        const user = response.data.user;
+        // Store user info in localStorage
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
+        localStorage.setItem('userEmail', user.email);
+        localStorage.setItem('userId', user.id);
 
-    // Navigate to main dashboard
-    navigateToDashboard(data.role);
-
-    setIsSubmitting(false);
-  };
-  const navigateToDashboard = (role) => {
-    switch (role) {
-      case 'staff':
-        navigate('/staff/dashboard');
-        break;
-      case 'client':
-        navigate('/client/dashboard');
-        break;
-      case 'donor':
-        navigate('/donor/dashboard');
-        break;
-      case 'volunteer':
-        navigate('/volunteer/dashboard');
-        break;
-      default:
-        navigate('/');
+        // Navigate to dashboard (redirects based on role)
+        navigateToDashboard();
+      } else {
+        setLoginError(response.data.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setLoginError(error.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+  const navigateToDashboard = () => {
+    navigate('/dashboard');
   };
 
   return (
@@ -60,19 +66,19 @@ const Login = () => {
               </label>
               <input
                 {...register('email', {
-                  required: 'Name is required',
-                  minLength: {
-                    value: 2,
-                    message: 'Name must be at least 2 characters',
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email address',
                   },
                 })}
-                type="text"
-                autoComplete="name"
+                type="email"
+                autoComplete="email"
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Enter email address"
               />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
              {/* Password */}
@@ -97,26 +103,6 @@ const Login = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                Role
-              </label>
-              <select
-                {...register('role', {
-                  required: 'Role is required',
-                })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="">Select your role</option>
-                <option value="staff">Staff</option>
-                <option value="client">Client</option>
-                <option value="donor">Donor</option>
-                <option value="volunteer">Volunteer</option>
-              </select>
-              {errors.role && (
-                <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
-              )}
-            </div>
           </div>
 
           <div>
@@ -129,14 +115,20 @@ const Login = () => {
             </button>
           </div>
           {/* Link to register page */}
+          {loginError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {loginError}
+            </div>
+          )}
+
           <div className="text-sm text-center">
             Don't have an account?{' '}
-            <a
-              href="/register"
+            <Link
+              to="/register"
               className="font-medium text-blue-600 hover:text-blue-500"
             >
               Register here
-            </a>
+            </Link>
           </div>
         </form>
       </div>
