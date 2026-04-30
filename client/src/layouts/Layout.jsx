@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
 const Layout = ({ children }) => {
-  const { user } = useAuth();
+  const [userRole, setUserRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [windowWidth, setWindowWidth] = useState(0);
 
   useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    setUserRole(role);
+
     const handleResize = () => {
       const width = window.innerWidth;
       setWindowWidth(width);
@@ -38,7 +40,6 @@ const Layout = ({ children }) => {
   }
 
   const isMobile = windowWidth < 768;
-  const userRole = user?.role;
   const mainContentClass = `flex-1 ${userRole && !isMobile ? 'ml-64' : ''}`;
 
   return (

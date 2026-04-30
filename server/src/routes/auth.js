@@ -1,6 +1,5 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const { auth } = require('../middleware/auth');
 const {
   register,
   login,
@@ -58,9 +57,9 @@ const loginValidation = [
     .withMessage('Password must be at least 6 characters long'),
 ];
 
-// Routes - simplified without validation for testing
-router.post('/register', register);
-router.post('/login', login);
+// Routes
+router.post('/register', [...registerValidation, validate], register);
+router.post('/login', [...loginValidation, validate], login);
 router.get('/me', getMe);
 
 module.exports = router;

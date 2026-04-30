@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
-  const { isAuthenticated, user } = useAuth();
   const [userRole, setUserRole] = useState(null);
   const [userName, setUserName] = useState(null);
 
@@ -14,9 +12,24 @@ const Home = () => {
     setUserName(name);
   }, []);
 
-  if (isAuthenticated && user?.role) {
-    return <Navigate to={`/${user.role}/dashboard`} replace />
-  }
+  // if (userRole) {
+  //   return (
+  //     <div className="text-center">
+  //       <h1 className="text-4xl font-bold text-gray-900 mb-4">
+  //         Welcome back, {userName}!
+  //       </h1>
+  //       <p className="text-lg text-gray-600 mb-8">
+  //         Navigate to your dashboard using the menu above.
+  //       </p>
+  //       <Link
+  //         to={`/${userRole}/dashboard`}
+  //         className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700"
+  //       >
+  //         Go to Dashboard
+  //       </Link>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -46,14 +59,14 @@ const Home = () => {
             Register for services, upload eligibility documents, and schedule pickup appointments.
           </p>
         </div>
-
+        
         <div className="text-center p-6 bg-white rounded-lg shadow-md">
           <h3 className="text-xl font-semibold mb-2">For Donors</h3>
           <p className="text-gray-600">
             Log donations, schedule drop-offs, and track your contribution history.
           </p>
         </div>
-
+        
         <div className="text-center p-6 bg-white rounded-lg shadow-md">
           <h3 className="text-xl font-semibold mb-2">For Volunteers</h3>
           <p className="text-gray-600">
@@ -73,7 +86,7 @@ const Home = () => {
             <h4 className="font-semibold mb-2">Register</h4>
             <p className="text-sm text-gray-600">Create an account with your role</p>
           </div>
-
+          
           <div className="text-center">
             <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
               <span className="text-blue-600 font-bold">2</span>
@@ -81,7 +94,7 @@ const Home = () => {
             <h4 className="font-semibold mb-2">Complete Profile</h4>
             <p className="text-sm text-gray-600">Fill in your specific information</p>
           </div>
-
+          
           <div className="text-center">
             <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
               <span className="text-blue-600 font-bold">3</span>
@@ -89,7 +102,7 @@ const Home = () => {
             <h4 className="font-semibold mb-2">Get Approved</h4>
             <p className="text-sm text-gray-600">Staff review and approve applications</p>
           </div>
-
+          
           <div className="text-center">
             <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
               <span className="text-blue-600 font-bold">4</span>

@@ -1,31 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { appointmentsAPI } from '../../api/appointments';
 
 const MyAppointments = () => {
-  const [appointments] = useState([
-    {
-      id: 1,
-      date: '2023-12-15',
-      timeSlot: { start: '2:00 PM', end: '4:00 PM' },
-      status: 'scheduled',
-      dietaryNotes: 'No nuts, gluten-free items preferred',
-    },
-    {
-      id: 2,
-      date: '2023-12-01',
-      timeSlot: { start: '10:00 AM', end: '12:00 PM' },
-      status: 'completed',
-      dietaryNotes: 'Vegetarian options only',
-    },
-    {
-      id: 3,
-      date: '2023-11-15',
-      timeSlot: { start: '3:00 PM', end: '5:00 PM' },
-      status: 'completed',
-      dietaryNotes: 'Dairy-free alternatives needed',
-    },
-  ]);
+  const [appointments, setAppointments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState('');
 
   const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [newAppointment, setNewAppointment] = useState({
+    date: '',
+    slot: '',
+    dietaryNotes: '',
+  });
+
+  useEffect(() => {
+    const loadAppointments = async () => {
+      try {
+        setIsLoading(true);
+        const response = await appointmentsAPI.getMyAppointments();
+        const normalized = (response.data?.data || []).map((appointment) => ({
+          id: appointment._id,
+          date: appointment.appointmentDate,
+          timeSlot: appointment.timeSlot,
+          status: appointment.status,
+          dietaryNotes: appointment.dietaryNotes,
+        }));
+        setAppointments(normalized);
+      } catch (error) {
+        setPageError(error.response?.data?.message || 'Unable to load appointments.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadAppointments();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -37,10 +45,61 @@ const MyAppointments = () => {
     }
   };
 
-  const handleCancelAppointment = (appointmentId) => {
+  const handleCancelAppointment = async (appointmentId) => {
     if (window.confirm('Are you sure you want to cancel this appointment?')) {
-      // This would make an API call to cancel the appointment
-      console.log('Cancelling appointment:', appointmentId);
+      try {
+        await appointmentsAPI.cancelAppointment(appointmentId);
+        setAppointments((prev) =>
+          prev.map((appointment) =>
+            appointment.id === appointmentId
+              ? { ...appointment, status: 'cancelled' }
+              : appointment
+          )
+        );
+      } catch (error) {
+        setPageError(error.response?.data?.message || 'Unable to cancel appointment.');
+      }
+    }
+  };
+
+  const slotMap = {
+    morning: { start: '9:00 AM', end: '12:00 PM' },
+    afternoon: { start: '1:00 PM', end: '4:00 PM' },
+    evening: { start: '5:00 PM', end: '7:00 PM' },
+  };
+
+  const handleScheduleAppointment = async () => {
+    if (!newAppointment.date || !newAppointment.slot) {
+      setPageError('Please select a date and time slot.');
+      return;
+    }
+
+    try {
+      setPageError('');
+      const timeSlot = slotMap[newAppointment.slot];
+      const response = await appointmentsAPI.createAppointment({
+        appointmentDate: newAppointment.date,
+        timeSlot,
+        dietaryNotes: newAppointment.dietaryNotes,
+      });
+
+      const created = response.data?.data;
+      if (created) {
+        setAppointments((prev) => ([
+          ...prev,
+          {
+            id: created._id,
+            date: created.appointmentDate,
+            timeSlot: created.timeSlot,
+            status: created.status,
+            dietaryNotes: created.dietaryNotes,
+          },
+        ]));
+      }
+      setShowScheduleForm(false);
+      setNewAppointment({ date: '', slot: '', dietaryNotes: '' });
+    } catch (error) {
+      setPageError(error.response?.data?.message || 'Unable to schedule appointment.');
     }
   };
 
@@ -53,6 +112,11 @@ const MyAppointments = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">My Appointments</h1>
           <p className="text-gray-600 mt-2">Manage your food pickup appointments.</p>
+          {pageError && (
+            <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700">
+              {pageError}
+            </div>
+          )}
         </div>
         <button
           onClick={() => setShowScheduleForm(!showScheduleForm)}
@@ -74,6 +138,8 @@ const MyAppointments = () => {
               </label>
               <input
                 type="date"
+                value={newAppointment.date}
+                onChange={(e) => setNewAppointment((prev) => ({ ...prev, date: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -82,7 +148,11 @@ const MyAppointments = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Preferred Time Slot
               </label>
-              <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <select
+                value={newAppointment.slot}
+                onChange={(e) => setNewAppointment((prev) => ({ ...prev, slot: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
                 <option value="">Select time slot</option>
                 <option value="morning">Morning (9:00 AM - 12:00 PM)</option>
                 <option value="afternoon">Afternoon (1:00 PM - 4:00 PM)</option>
@@ -97,6 +167,8 @@ const MyAppointments = () => {
             </label>
             <textarea
               rows="3"
+              value={newAppointment.dietaryNotes}
+              onChange={(e) => setNewAppointment((prev) => ({ ...prev, dietaryNotes: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="Any dietary restrictions or preferences..."
             />
@@ -109,7 +181,10 @@ const MyAppointments = () => {
             >
               Cancel
             </button>
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+            <button
+              onClick={handleScheduleAppointment}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            >
               Schedule Appointment
             </button>
           </div>
@@ -120,7 +195,11 @@ const MyAppointments = () => {
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Appointments</h2>
         
-        {upcomingAppointments.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <p className="text-gray-500">Loading appointments...</p>
+          </div>
+        ) : upcomingAppointments.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-500">No upcoming appointments scheduled.</p>
             <button

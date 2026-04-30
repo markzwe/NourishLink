@@ -49,6 +49,7 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({
@@ -57,6 +58,7 @@ const login = async (req, res) => {
       });
     }
 
+    // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({
@@ -85,9 +87,8 @@ const login = async (req, res) => {
 // @desc    Get current user (simplified - no auth required)
 // @route   GET /api/auth/me
 // @access  Public
-const getMe = async (req, res, next) => {
+const getMe = async (req, res) => {
   try {
-    // Return first user as default (simplified for demo)
     const user = await User.findOne().select('-password');
     if (!user) {
       return res.status(404).json({

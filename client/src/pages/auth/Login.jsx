@@ -1,19 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useAuth } from '../../context/AuthContext';
+import { authAPI } from '../../api/auth';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-
-  useEffect(() => {
-    if (isAuthenticated && user?.role) {
-      navigateToDashboard(user.role);
-    }
-  }, [isAuthenticated, user, navigate]);
+  const [loginError, setLoginError] = useState('');
 
   const {
     register,
@@ -23,44 +16,37 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
-    setErrorMessage('');
+    setLoginError('');
 
     try {
-      const result = await login({
+      // Call the actual API
+      const response = await authAPI.login({
         email: data.email,
-        password: data.password,
+        password: data.password
       });
+      
+      if (response.data.success) {
+        const user = response.data.user;
+        // Store user info in localStorage
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
+        localStorage.setItem('userEmail', user.email);
+        localStorage.setItem('userId', user.id);
 
-      if (!result.success) {
-        setErrorMessage(result.error || 'Login failed. Please check your credentials.');
-        return;
+        // Navigate to dashboard (redirects based on role)
+        navigateToDashboard();
+      } else {
+        setLoginError(response.data.message || 'Login failed');
       }
-
-      const user = result.user;
-      navigateToDashboard(user.role);
     } catch (error) {
-      setErrorMessage('Login failed. Please check your credentials.');
+      console.error('Login error:', error);
+      setLoginError(error.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsSubmitting(false);
     }
   };
-  const navigateToDashboard = (role) => {
-    switch (role) {
-      case 'staff':
-        navigate('/staff/dashboard');
-        break;
-      case 'client':
-        navigate('/client/dashboard');
-        break;
-      case 'donor':
-        navigate('/donor/dashboard');
-        break;
-      case 'volunteer':
-        navigate('/volunteer/dashboard');
-        break;
-      default:
-        navigate('/');
-    }
+  const navigateToDashboard = () => {
+    navigate('/dashboard');
   };
 
   return (
@@ -68,14 +54,14 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Login
+           Login
           </h2>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
               <input
@@ -95,7 +81,7 @@ const Login = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
-            {/* Password */}
+             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
@@ -119,11 +105,6 @@ const Login = () => {
             </div>
           </div>
 
-          {errorMessage && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {errorMessage}
-            </div>
-          )}
           <div>
             <button
               type="submit"
@@ -134,14 +115,20 @@ const Login = () => {
             </button>
           </div>
           {/* Link to register page */}
+          {loginError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {loginError}
+            </div>
+          )}
+
           <div className="text-sm text-center">
             Don't have an account?{' '}
-            <a
-              href="/register"
+            <Link
+              to="/register"
               className="font-medium text-blue-600 hover:text-blue-500"
             >
               Register here
-            </a>
+            </Link>
           </div>
         </form>
       </div>

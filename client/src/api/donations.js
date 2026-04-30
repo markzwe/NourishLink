@@ -9,6 +9,7 @@ export const donationsAPI = {
   // Donations
   createDonation: (donationData) => api.post('/api/donations', donationData),
   getMyDonations: () => api.get('/api/donations/my'),
+  getIncomingDonations: () => api.get('/api/donations/incoming'),
   processDonation: (id) => api.patch(`/api/donations/${id}/process`),
   getReceipt: (id) => api.get(`/api/donations/${id}/receipt`),
 };

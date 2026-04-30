@@ -1,98 +1,51 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { donationsAPI } from '../../api/donations';
 
 const IncomingDonations = () => {
-  const [donations] = useState([
-    {
-      id: 1,
-      donorName: 'Local Grocery Store',
-      dropoffDate: '2023-12-15',
-      dropoffTime: '10:00 AM',
-      status: 'scheduled',
-      totalWeight: 150,
-      items: [
-        { type: 'canned_goods', description: 'Canned vegetables', quantity: '50 cases', condition: 'good' },
-        { type: 'dry_goods', description: 'Pasta and rice', quantity: '30 bags', condition: 'excellent' },
-        { type: 'bakery', description: 'Bread items', quantity: '20 loaves', condition: 'good' },
-      ],
-      notes: 'Regular weekly donation',
-      contactPhone: '(555) 123-4567',
-    },
-    {
-      id: 2,
-      donorName: 'Community Farm',
-      dropoffDate: '2023-12-15',
-      dropoffTime: '2:00 PM',
-      status: 'arrived',
-      totalWeight: 75,
-      items: [
-        { type: 'fresh_produce', description: 'Mixed vegetables', quantity: '75 lbs', condition: 'excellent' },
-        { type: 'fresh_produce', description: 'Fresh fruits', quantity: '50 lbs', condition: 'good' },
-      ],
-      notes: 'Seasonal produce donation',
-      contactPhone: '(555) 234-5678',
-    },
-    {
-      id: 3,
-      donorName: 'Jane Smith',
-      dropoffDate: '2023-12-14',
-      dropoffTime: '3:00 PM',
-      status: 'processing',
-      totalWeight: 25,
-      items: [
-        { type: 'canned_goods', description: 'Canned goods', quantity: '15 cans', condition: 'good' },
-        { type: 'dry_goods', description: 'Pantry items', quantity: '10 boxes', condition: 'good' },
-      ],
-      notes: 'Individual donor',
-      contactPhone: '(555) 345-6789',
-    },
-    {
-      id: 4,
-      donorName: 'Food Bank Central',
-      dropoffDate: '2023-12-16',
-      dropoffTime: '9:00 AM',
-      status: 'scheduled',
-      totalWeight: 500,
-      items: [
-        { type: 'mixed', description: 'Various food items', quantity: '500 lbs', condition: 'good' },
-      ],
-      notes: 'Monthly bulk delivery',
-      contactPhone: '(555) 456-7890',
-    },
-  ]);
+  const [donations, setDonations] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState('');
 
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [actionStatus, setActionStatus] = useState({});
+
+  useEffect(() => {
+    const loadIncomingDonations = async () => {
+      try {
+        setIsLoading(true);
+        const response = await donationsAPI.getIncomingDonations();
+        setDonations(response.data?.data || []);
+      } catch (error) {
+        setPageError(error.response?.data?.message || 'Unable to load incoming donations.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadIncomingDonations();
+  }, []);
 
   const handleProcess = async (donationId) => {
     setActionStatus(prev => ({ ...prev, [donationId]: 'processing' }));
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await donationsAPI.processDonation(donationId);
+      const updatedDonation = response.data?.data;
+      if (updatedDonation) {
+        setDonations((prev) => prev.map((donation) => (donation.id === updatedDonation.id ? updatedDonation : donation)));
+      }
       setActionStatus(prev => ({ ...prev, [donationId]: 'processed' }));
-      
-      alert(`Donation #${donationId} has been processed successfully!`);
       
       setTimeout(() => setActionStatus(prev => ({ ...prev, [donationId]: null })), 2000);
     } catch (error) {
-      console.error('Process error:', error);
+      setPageError(error.response?.data?.message || 'Unable to process donation.');
       setActionStatus(prev => ({ ...prev, [donationId]: 'error' }));
     }
   };
 
   const handleComplete = async (donationId) => {
-    setActionStatus(prev => ({ ...prev, [donationId]: 'completing' }));
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setActionStatus(prev => ({ ...prev, [donationId]: 'completed' }));
-      
-      alert(`Donation #${donationId} has been completed and added to inventory!`);
-      
-      setTimeout(() => setActionStatus(prev => ({ ...prev, [donationId]: null })), 2000);
-    } catch (error) {
-      console.error('Complete error:', error);
-      setActionStatus(prev => ({ ...prev, [donationId]: 'error' }));
-    }
+    // Server progresses status from processing -> completed on same endpoint.
+    handleProcess(donationId);
   };
 
   const getStatusColor = (status) => {
@@ -123,6 +76,11 @@ const IncomingDonations = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Incoming Donations</h1>
         <p className="text-gray-600 mt-2">Manage and process incoming food donations.</p>
+        {pageError && (
+          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700">
+            {pageError}
+          </div>
+        )}
       </div>
 
       {/* Summary Stats */}
@@ -154,7 +112,11 @@ const IncomingDonations = () => {
 
       {/* Donations List */}
       <div className="space-y-4">
-        {donations.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <p className="text-gray-500">Loading incoming donations...</p>
+          </div>
+        ) : donations.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-500">No incoming donations scheduled.</p>
           </div>

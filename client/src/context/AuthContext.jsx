@@ -3,10 +3,10 @@ import { authAPI } from '../api/auth';
 
 const AuthContext = createContext();
 
-// Initial state - simplified without tokens
+// Initial state - no token needed
 const initialState = {
   user: null,
-  isLoading: false,
+  isLoading: true,
   error: null,
   isAuthenticated: false,
 };
@@ -82,16 +82,26 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Load user on initial render
+  // Load user from localStorage on initial render
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const response = await authAPI.getMe();
+    const loadUser = () => {
+      const userId = localStorage.getItem('userId');
+      const userRole = localStorage.getItem('userRole');
+      const userName = localStorage.getItem('userName');
+      const userEmail = localStorage.getItem('userEmail');
+      
+      if (userId && userRole) {
         dispatch({
           type: AUTH_ACTIONS.LOAD_USER_SUCCESS,
-          payload: response.data.user,
+          payload: {
+            id: userId,
+            role: userRole,
+            firstName: userName?.split(' ')[0] || '',
+            lastName: userName?.split(' ')[1] || '',
+            email: userEmail || ''
+          },
         });
-      } catch (error) {
+      } else {
         dispatch({
           type: AUTH_ACTIONS.LOAD_USER_FAILURE,
         });
@@ -106,16 +116,29 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
     try {
       const response = await authAPI.login(credentials);
-      const { user } = response.data;
-
-      localStorage.setItem('userRole', user.role);
-      localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: { user },
-      });
-
-      return { success: true, user };
+      
+      if (response.data.success) {
+        const user = response.data.user;
+        
+        // Store user info in localStorage
+        localStorage.setItem('userId', user.id);
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
+        localStorage.setItem('userEmail', user.email);
+        
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_SUCCESS,
+          payload: { user },
+        });
+        
+        return { success: true, user };
+      } else {
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_FAILURE,
+          payload: response.data.message || 'Login failed',
+        });
+        return { success: false, error: response.data.message || 'Login failed' };
+      }
     } catch (error) {
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
@@ -130,16 +153,29 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
     try {
       const response = await authAPI.register(userData);
-      const { user } = response.data;
-
-      localStorage.setItem('userRole', user.role);
-      localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
-      dispatch({
-        type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: { user },
-      });
-
-      return { success: true, user };
+      
+      if (response.data.success) {
+        const user = response.data.user;
+        
+        // Store user info in localStorage
+        localStorage.setItem('userId', user.id);
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
+        localStorage.setItem('userEmail', user.email);
+        
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_SUCCESS,
+          payload: { user },
+        });
+        
+        return { success: true, user };
+      } else {
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_FAILURE,
+          payload: response.data.message || 'Registration failed',
+        });
+        return { success: false, error: response.data.message || 'Registration failed' };
+      }
     } catch (error) {
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
@@ -151,8 +187,10 @@ export const AuthProvider = ({ children }) => {
 
   // Logout
   const logout = () => {
+    localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
     dispatch({ type: AUTH_ACTIONS.LOGOUT });
   };
 

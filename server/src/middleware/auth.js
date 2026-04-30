@@ -1,8 +1,28 @@
-// Simplified auth - no JWT required
+const User = require('../models/User');
+
 const auth = async (req, res, next) => {
-  // Just pass through without authentication
-  req.user = { id: '1', role: 'staff' }; // Default user for demo
-  next();
+  try {
+    const userId = req.header('x-user-id');
+    if (!userId) {
+      return res.status(401).json({ message: 'No user context provided' });
+    }
+
+    const user = await User.findById(userId).select('-password');
+
+    if (!user) {
+      return res.status(401).json({ message: 'User is not valid' });
+    }
+
+    if (!user.isActive) {
+      return res.status(401).json({ message: 'Account is deactivated' });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(401).json({ message: 'User authentication failed' });
+  }
 };
 
 // Role-based authorization middleware

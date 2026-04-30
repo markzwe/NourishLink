@@ -1,73 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { clientsAPI } from '../../api/clients';
 
 const PendingApplications = () => {
-  const [applications] = useState([
-    {
-      id: 1,
-      firstName: 'Jane',
-      lastName: 'Smith',
-      email: 'jane.smith@email.com',
-      applicationDate: '2023-12-10',
-      householdSize: 3,
-      monthlyIncome: 1800,
-      address: '456 Oak Street, Anytown, CA 12345',
-      phone: '(555) 234-5678',
-      documents: [
-        { type: 'proof_of_income', status: 'approved', fileName: 'paystub_dec.pdf' },
-        { type: 'id_document', status: 'pending', fileName: 'driver_license.jpg' },
-      ],
-      eligibilityStatus: 'pending',
-    },
-    {
-      id: 2,
-      firstName: 'Robert',
-      lastName: 'Johnson',
-      email: 'robert.j@email.com',
-      applicationDate: '2023-12-08',
-      householdSize: 2,
-      monthlyIncome: 2500,
-      address: '789 Pine Avenue, Anytown, CA 12345',
-      phone: '(555) 345-6789',
-      documents: [
-        { type: 'proof_of_income', status: 'approved', fileName: 'employment_letter.pdf' },
-        { type: 'address_proof', status: 'approved', fileName: 'utility_bill.pdf' },
-      ],
-      eligibilityStatus: 'pending',
-    },
-    {
-      id: 3,
-      firstName: 'Maria',
-      lastName: 'Garcia',
-      email: 'maria.g@email.com',
-      applicationDate: '2023-12-05',
-      householdSize: 4,
-      monthlyIncome: 2200,
-      address: '321 Elm Road, Anytown, CA 12345',
-      phone: '(555) 456-7890',
-      documents: [
-        { type: 'proof_of_income', status: 'pending', fileName: 'tax_return.pdf' },
-        { type: 'id_document', status: 'pending', fileName: 'state_id.jpg' },
-        { type: 'address_proof', status: 'approved', fileName: 'lease_agreement.pdf' },
-      ],
-      eligibilityStatus: 'pending',
-    },
-  ]);
+  const [applications, setApplications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState('');
 
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [actionStatus, setActionStatus] = useState({});
+
+  useEffect(() => {
+    const loadPendingApplications = async () => {
+      try {
+        setIsLoading(true);
+        const response = await clientsAPI.getPendingClients();
+        setApplications(response.data?.data || []);
+      } catch (error) {
+        setPageError(error.response?.data?.message || 'Unable to load pending applications.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPendingApplications();
+  }, []);
 
   const handleApprove = async (applicationId) => {
     setActionStatus(prev => ({ ...prev, [applicationId]: 'approving' }));
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await clientsAPI.updateEligibility(applicationId, 'approved');
       setActionStatus(prev => ({ ...prev, [applicationId]: 'approved' }));
-      
-      alert(`Application #${applicationId} has been approved!`);
+      setApplications((prev) => prev.filter((application) => application._id !== applicationId));
       
       setTimeout(() => setActionStatus(prev => ({ ...prev, [applicationId]: null })), 2000);
     } catch (error) {
-      console.error('Approve error:', error);
+      setPageError(error.response?.data?.message || 'Unable to approve application.');
       setActionStatus(prev => ({ ...prev, [applicationId]: 'error' }));
     }
   };
@@ -76,14 +44,13 @@ const PendingApplications = () => {
     setActionStatus(prev => ({ ...prev, [applicationId]: 'rejecting' }));
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await clientsAPI.updateEligibility(applicationId, 'rejected');
       setActionStatus(prev => ({ ...prev, [applicationId]: 'rejected' }));
-      
-      alert(`Application #${applicationId} has been rejected.`);
+      setApplications((prev) => prev.filter((application) => application._id !== applicationId));
       
       setTimeout(() => setActionStatus(prev => ({ ...prev, [applicationId]: null })), 2000);
     } catch (error) {
-      console.error('Reject error:', error);
+      setPageError(error.response?.data?.message || 'Unable to reject application.');
       setActionStatus(prev => ({ ...prev, [applicationId]: 'error' }));
     }
   };
@@ -111,6 +78,11 @@ const PendingApplications = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Pending Applications</h1>
         <p className="text-gray-600 mt-2">Review and process client eligibility applications.</p>
+        {pageError && (
+          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700">
+            {pageError}
+          </div>
+        )}
       </div>
 
       {/* Summary Stats */}
@@ -125,7 +97,7 @@ const PendingApplications = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-2">This Week</h3>
           <div className="text-3xl font-bold text-blue-600">
             {applications.filter(a => {
-              const appDate = new Date(a.applicationDate);
+              const appDate = new Date(a.applicationDate || a.createdAt);
               const weekAgo = new Date();
               weekAgo.setDate(weekAgo.getDate() - 7);
               return appDate >= weekAgo;
@@ -149,18 +121,22 @@ const PendingApplications = () => {
 
       {/* Applications List */}
       <div className="space-y-4">
-        {applications.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <p className="text-gray-500">Loading pending applications...</p>
+          </div>
+        ) : applications.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-500">No pending applications to review.</p>
           </div>
         ) : (
           applications.map(application => (
-            <div key={application.id} className="bg-white rounded-lg shadow-md p-6">
+            <div key={application._id} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
                     <h3 className="text-lg font-medium text-gray-900">
-                      {application.firstName} {application.lastName}
+                      {application.userId?.firstName} {application.userId?.lastName}
                     </h3>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getEligibilityColor(application.eligibilityStatus)}`}>
                       {application.eligibilityStatus}
@@ -170,7 +146,7 @@ const PendingApplications = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mb-4">
                     <div>
                       <p className="font-medium text-gray-900">Contact</p>
-                      <p>{application.email}</p>
+                      <p>{application.userId?.email}</p>
                       <p>{application.phone}</p>
                     </div>
                     
@@ -182,8 +158,8 @@ const PendingApplications = () => {
                     
                     <div>
                       <p className="font-medium text-gray-900">Application</p>
-                      <p>Submitted: {new Date(application.applicationDate).toLocaleDateString()}</p>
-                      <p>{application.address}</p>
+                      <p>Submitted: {new Date(application.applicationDate || application.createdAt).toLocaleDateString()}</p>
+                      <p>{application.address?.street}, {application.address?.city}, {application.address?.state} {application.address?.zipCode}</p>
                     </div>
                   </div>
                   
@@ -191,7 +167,7 @@ const PendingApplications = () => {
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-900 mb-2">Documents:</h4>
                     <div className="space-y-2">
-                      {application.documents.map((doc, index) => (
+                      {(application.documents || []).map((doc, index) => (
                         <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                           <div className="flex items-center space-x-3">
                             <span className="text-sm text-gray-700">{doc.fileName}</span>
@@ -219,27 +195,27 @@ const PendingApplications = () => {
                 </button>
                 
                 <button
-                  onClick={() => handleApprove(application.id)}
-                  disabled={actionStatus[application.id]}
+                  onClick={() => handleApprove(application._id)}
+                  disabled={actionStatus[application._id]}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                 >
-                  {actionStatus[application.id] === 'approving' ? 'Approving...' :
-                   actionStatus[application.id] === 'approved' ? 'Approved!' :
-                   actionStatus[application.id] === 'error' ? 'Error' :
+                  {actionStatus[application._id] === 'approving' ? 'Approving...' :
+                   actionStatus[application._id] === 'approved' ? 'Approved!' :
+                   actionStatus[application._id] === 'error' ? 'Error' :
                    'Approve'}
                 </button>
                 
                 <button
                   onClick={() => {
                     const reason = prompt('Please provide reason for rejection:');
-                    if (reason) handleReject(application.id, reason);
+                    if (reason) handleReject(application._id, reason);
                   }}
-                  disabled={actionStatus[application.id]}
+                  disabled={actionStatus[application._id]}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                 >
-                  {actionStatus[application.id] === 'rejecting' ? 'Rejecting...' :
-                   actionStatus[application.id] === 'rejected' ? 'Rejected!' :
-                   actionStatus[application.id] === 'error' ? 'Error' :
+                  {actionStatus[application._id] === 'rejecting' ? 'Rejecting...' :
+                   actionStatus[application._id] === 'rejected' ? 'Rejected!' :
+                   actionStatus[application._id] === 'error' ? 'Error' :
                    'Reject'}
                 </button>
               </div>
@@ -255,7 +231,7 @@ const PendingApplications = () => {
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Application Details - {selectedApplication.firstName} {selectedApplication.lastName}
+                  Application Details - {selectedApplication.userId?.firstName} {selectedApplication.userId?.lastName}
                 </h2>
                 <button
                   onClick={() => setSelectedApplication(null)}
@@ -273,11 +249,11 @@ const PendingApplications = () => {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="font-medium text-gray-700">Name:</p>
-                      <p className="text-gray-600">{selectedApplication.firstName} {selectedApplication.lastName}</p>
+                      <p className="text-gray-600">{selectedApplication.userId?.firstName} {selectedApplication.userId?.lastName}</p>
                     </div>
                     <div>
                       <p className="font-medium text-gray-700">Email:</p>
-                      <p className="text-gray-600">{selectedApplication.email}</p>
+                      <p className="text-gray-600">{selectedApplication.userId?.email}</p>
                     </div>
                     <div>
                       <p className="font-medium text-gray-700">Phone:</p>
@@ -285,7 +261,7 @@ const PendingApplications = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-700">Application Date:</p>
-                      <p className="text-gray-600">{new Date(selectedApplication.applicationDate).toLocaleDateString()}</p>
+                      <p className="text-gray-600">{new Date(selectedApplication.applicationDate || selectedApplication.createdAt).toLocaleDateString()}</p>
                     </div>
                   </div>
                 </div>
@@ -303,7 +279,7 @@ const PendingApplications = () => {
                     </div>
                     <div className="col-span-2">
                       <p className="font-medium text-gray-700">Address:</p>
-                      <p className="text-gray-600">{selectedApplication.address}</p>
+                      <p className="text-gray-600">{selectedApplication.address?.street}, {selectedApplication.address?.city}, {selectedApplication.address?.state} {selectedApplication.address?.zipCode}</p>
                     </div>
                   </div>
                 </div>
@@ -311,7 +287,7 @@ const PendingApplications = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Submitted Documents</h3>
                   <div className="space-y-2">
-                    {selectedApplication.documents.map((doc, index) => (
+                    {(selectedApplication.documents || []).map((doc, index) => (
                       <div key={index} className="flex items-center justify-between p-3 border border-gray-200 rounded">
                         <div>
                           <p className="font-medium text-gray-900">{doc.fileName}</p>
@@ -329,7 +305,7 @@ const PendingApplications = () => {
               <div className="mt-6 flex space-x-3">
                 <button
                   onClick={() => {
-                    handleApprove(selectedApplication.id);
+                    handleApprove(selectedApplication._id);
                     setSelectedApplication(null);
                   }}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -341,7 +317,7 @@ const PendingApplications = () => {
                   onClick={() => {
                     const reason = prompt('Please provide reason for rejection:');
                     if (reason) {
-                      handleReject(selectedApplication.id, reason);
+                      handleReject(selectedApplication._id, reason);
                       setSelectedApplication(null);
                     }
                   }}

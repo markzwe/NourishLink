@@ -3,6 +3,8 @@ const { auth, authorize } = require('../middleware/auth');
 const DonorProfile = require('../models/DonorProfile');
 
 const router = express.Router();
+let donationIdCounter = 1;
+const donationsStore = [];
 
 // All routes require authentication
 router.use(auth);
@@ -10,7 +12,7 @@ router.use(auth);
 // @desc    Create donor profile
 // @route   POST /api/donors
 // @access  Private (Donor)
-router.post('/', authorize('donor'), async (req, res, next) => {
+router.post('/donors', authorize('donor'), async (req, res, next) => {
   try {
     // Check if donor profile already exists
     const existingProfile = await DonorProfile.findOne({ userId: req.user.id });
@@ -38,7 +40,7 @@ router.post('/', authorize('donor'), async (req, res, next) => {
 // @desc    Get donor profile
 // @route   GET /api/donors/:id
 // @access  Private (Donor/Staff)
-router.get('/:id', async (req, res, next) => {
+router.get('/donors/:id', async (req, res, next) => {
   try {
     const donorProfile = await DonorProfile.findById(req.params.id)
       .populate('userId', 'firstName lastName email');
@@ -70,7 +72,7 @@ router.get('/:id', async (req, res, next) => {
 // @desc    Update donor profile
 // @route   PATCH /api/donors/:id
 // @access  Private (Donor/Staff)
-router.patch('/:id', async (req, res, next) => {
+router.patch('/donors/:id', async (req, res, next) => {
   try {
     let donorProfile = await DonorProfile.findById(req.params.id);
 
@@ -109,12 +111,26 @@ router.patch('/:id', async (req, res, next) => {
 // @access  Private (Donor/Staff)
 router.post('/donations', authorize('donor', 'staff'), async (req, res, next) => {
   try {
-    // This would create a donation record
-    // For now, return success as a placeholder
+    const donation = {
+      id: String(donationIdCounter++),
+      donorId: req.user.id,
+      donorName: `${req.user.firstName} ${req.user.lastName}`,
+      dropoffDate: req.body.dropoffDate,
+      dropoffTime: req.body.dropoffTime,
+      status: 'scheduled',
+      totalWeight: Number(req.body.totalWeight || 0),
+      items: Array.isArray(req.body.items) ? req.body.items : [],
+      notes: req.body.notes || '',
+      contactPhone: req.body.contactPhone || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    donationsStore.push(donation);
+
     res.status(201).json({
       success: true,
       message: 'Donation logged successfully',
-      data: req.body
+      data: donation
     });
   } catch (error) {
     next(error);
@@ -126,12 +142,26 @@ router.post('/donations', authorize('donor', 'staff'), async (req, res, next) =>
 // @access  Private (Donor)
 router.get('/donations/my', authorize('donor'), async (req, res, next) => {
   try {
-    // This would get donations for the logged-in donor
-    // For now, return empty array as placeholder
+    const myDonations = donationsStore.filter((donation) => donation.donorId === req.user.id);
     res.status(200).json({
       success: true,
-      count: 0,
-      data: []
+      count: myDonations.length,
+      data: myDonations
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Get incoming donations (staff)
+// @route   GET /api/donations/incoming
+// @access  Private (Staff)
+router.get('/donations/incoming', authorize('staff'), async (req, res, next) => {
+  try {
+    res.status(200).json({
+      success: true,
+      count: donationsStore.length,
+      data: donationsStore
     });
   } catch (error) {
     next(error);
@@ -143,11 +173,25 @@ router.get('/donations/my', authorize('donor'), async (req, res, next) => {
 // @access  Private (Staff)
 router.patch('/donations/:id/process', authorize('staff'), async (req, res, next) => {
   try {
-    // This would process a donation
-    // For now, return success as placeholder
+    const donation = donationsStore.find((entry) => entry.id === req.params.id);
+    if (!donation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Donation not found'
+      });
+    }
+
+    if (donation.status === 'scheduled') {
+      donation.status = 'processing';
+    } else if (donation.status === 'processing') {
+      donation.status = 'completed';
+    }
+    donation.updatedAt = new Date().toISOString();
+
     res.status(200).json({
       success: true,
-      message: 'Donation processed successfully'
+      message: 'Donation status updated successfully',
+      data: donation
     });
   } catch (error) {
     next(error);
@@ -159,11 +203,31 @@ router.patch('/donations/:id/process', authorize('staff'), async (req, res, next
 // @access  Private (Donor/Staff)
 router.get('/donations/:id/receipt', async (req, res, next) => {
   try {
-    // This would generate/download a receipt
-    // For now, return success as placeholder
+    const donation = donationsStore.find((entry) => entry.id === req.params.id);
+    if (!donation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Donation not found'
+      });
+    }
+
+    if (req.user.role === 'donor' && donation.donorId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to access this receipt'
+      });
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Receipt generated successfully'
+      message: 'Receipt generated successfully',
+      data: {
+        donationId: donation.id,
+        donorName: donation.donorName,
+        totalWeight: donation.totalWeight,
+        dropoffDate: donation.dropoffDate,
+        status: donation.status
+      }
     });
   } catch (error) {
     next(error);

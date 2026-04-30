@@ -5,13 +5,13 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 // Import routes
+const authRoutes = require('./routes/auth');
 const clientRoutes = require('./routes/clients');
 const appointmentRoutes = require('./routes/appointments');
 const inventoryRoutes = require('./routes/inventory');
 const donationRoutes = require('./routes/donations');
 const volunteerRoutes = require('./routes/volunteers');
 const reportRoutes = require('./routes/reports');
-const authRoutes = require('./routes/auth');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -36,8 +36,14 @@ app.use(express.urlencoded({ extended: true }));
 // Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Auth route
+// API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api', donationRoutes);
+app.use('/api', volunteerRoutes);
+app.use('/api/reports', reportRoutes);
 
 // API Routes
 app.use('/api/clients', clientRoutes);
