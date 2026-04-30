@@ -35,13 +35,9 @@ app.use(express.urlencoded({ extended: true }));
 // Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// API Routes
-// app.use('/api/clients', clientRoutes);
-// app.use('/api/appointments', appointmentRoutes);
-// app.use('/api/inventory', inventoryRoutes);
-// app.use('/api/donations', donationRoutes);
-// app.use('/api/volunteers', volunteerRoutes);
-// app.use('/api/reports', reportRoutes);
+// Auth route
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

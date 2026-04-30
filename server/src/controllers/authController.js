@@ -70,7 +70,6 @@ const register = async (req, res, next) => {
 // @access  Public
 const login = async (req, res, next) => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -80,36 +79,36 @@ const login = async (req, res, next) => {
       });
     }
 
-    const { name, role } = req.body;
+    const { email, password } = req.body;
 
-    // Split name into first and last name
-    const nameParts = name.trim().split(' ');
-    const firstName = nameParts[0] || 'User';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
 
-    // Create a temporary user object (no database lookup needed)
-    const tempUser = {
-      _id: new mongoose.Types.ObjectId(),
-      firstName,
-      lastName,
-      email: `${firstName.toLowerCase().replace(/\s+/g, '.')}@temp.com`,
-      role,
-      isActive: true,
-    };
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
 
-    // Generate token
-    const token = generateToken(tempUser._id);
+    const token = generateToken(user._id);
 
     res.status(200).json({
       success: true,
       token,
       user: {
-        id: tempUser._id,
-        firstName: tempUser.firstName,
-        lastName: tempUser.lastName,
-        email: tempUser.email,
-        role: tempUser.role,
-        isActive: tempUser.isActive,
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
       }
     });
   } catch (error) {
@@ -117,21 +116,18 @@ const login = async (req, res, next) => {
   }
 };
 
-// @desc    Get current user (simplified - from token only)
+// @desc    Get current user
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = async (req, res, next) => {
   try {
-    // For simplified auth, we'll return basic user info from the token
-    // In a real implementation, you might want to store user sessions
-    const user = {
-      id: req.user.id,
-      firstName: 'User', // Default fallback
-      lastName: '',
-      email: 'user@temp.com',
-      role: 'client', // Default fallback
-      isActive: true,
-    };
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
     res.status(200).json({
       success: true,

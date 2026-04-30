@@ -90,24 +90,24 @@ export const AuthProvider = ({ children }) => {
   // Load user on initial render if token exists
   useEffect(() => {
     const loadUser = async () => {
-      if (state.token) {
-        try {
-          const response = await authAPI.getMe();
-          dispatch({
-            type: AUTH_ACTIONS.LOAD_USER_SUCCESS,
-            payload: response.data,
-          });
-        } catch (error) {
-          dispatch({
-            type: AUTH_ACTIONS.LOAD_USER_FAILURE,
-          });
-          localStorage.removeItem('token');
-        }
+      if (!state.token) return;
+
+      try {
+        const response = await authAPI.getMe();
+        dispatch({
+          type: AUTH_ACTIONS.LOAD_USER_SUCCESS,
+          payload: response.data.user,
+        });
+      } catch (error) {
+        dispatch({
+          type: AUTH_ACTIONS.LOAD_USER_FAILURE,
+        });
+        localStorage.removeItem('token');
       }
     };
 
     loadUser();
-  }, []);
+  }, [state.token]);
 
   // Login
   const login = async (credentials) => {
@@ -115,14 +115,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.login(credentials);
       const { token, user } = response.data;
-      
+
       localStorage.setItem('token', token);
+      localStorage.setItem('userRole', user.role);
+      localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: { token, user },
       });
-      
-      return { success: true };
+
+      return { success: true, user };
     } catch (error) {
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
@@ -138,14 +140,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.register(userData);
       const { token, user } = response.data;
-      
+
       localStorage.setItem('token', token);
+      localStorage.setItem('userRole', user.role);
+      localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
         payload: { token, user },
       });
-      
-      return { success: true };
+
+      return { success: true, user };
     } catch (error) {
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
@@ -158,6 +162,8 @@ export const AuthProvider = ({ children }) => {
   // Logout
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
     dispatch({ type: AUTH_ACTIONS.LOGOUT });
   };
 

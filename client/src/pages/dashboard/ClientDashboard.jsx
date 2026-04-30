@@ -1,8 +1,8 @@
 import React from 'react';
-// import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const ClientDashboard = () => {
-  // const { user } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div>
@@ -18,13 +18,13 @@ const ClientDashboard = () => {
           <div className="text-3xl font-bold text-green-600">Approved</div>
           <p className="text-sm text-gray-600 mt-2">Next renewal: 2024-12-31</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Next Appointment</h3>
           <div className="text-3xl font-bold text-blue-600">Dec 15</div>
           <p className="text-sm text-gray-600 mt-2">2:00 PM - 4:00 PM</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Household Size</h3>
           <div className="text-3xl font-bold text-purple-600">4</div>

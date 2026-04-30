@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useAuth } from '../../context/AuthContext';
 
 const Register = () => {
+  const navigate = useNavigate();
+  const { register: registerUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const {
     register,
@@ -15,15 +19,33 @@ const Register = () => {
 
   const password = watch('password');
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setIsSubmitting(true);
     setSuccessMessage('');
+    setErrorMessage('');
 
-    console.log('Dummy register form submitted', data);
-    setTimeout(() => {
-      setSuccessMessage('Registration submitted successfully. This is a dummy page.');
+    try {
+      const result = await registerUser({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+      });
+
+      if (!result.success) {
+        setErrorMessage(result.error || 'Registration failed. Please try again.');
+      } else {
+        setSuccessMessage('Registration successful! Redirecting to login...');
+        setTimeout(() => {
+          navigate('/login');
+        }, 1200);
+      }
+    } catch (error) {
+      setErrorMessage('Registration failed. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 500);
+    }
   };
 
   return (
@@ -166,6 +188,11 @@ const Register = () => {
             </div>
           </div>
 
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {errorMessage}
+            </div>
+          )}
           {successMessage && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
               {successMessage}
