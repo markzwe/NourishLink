@@ -1,30 +1,10 @@
-const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
-const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
-
-// Generate JWT token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
-  });
-};
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
-const register = async (req, res, next) => {
+const register = async (req, res) => {
   try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
-
     const { firstName, lastName, email, password, role } = req.body;
 
     // Check if user exists
@@ -45,12 +25,8 @@ const register = async (req, res, next) => {
       role,
     });
 
-    // Generate token
-    const token = generateToken(user._id);
-
     res.status(201).json({
       success: true,
-      token,
       user: {
         id: user._id,
         firstName: user.firstName,
@@ -61,24 +37,16 @@ const register = async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    console.error('Register error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
   }
 };
 
-// @desc    Login user (simplified - name and role only)
+// @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
-const login = async (req, res, next) => {
+const login = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
-
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
@@ -97,11 +65,8 @@ const login = async (req, res, next) => {
       });
     }
 
-    const token = generateToken(user._id);
-
     res.status(200).json({
       success: true,
-      token,
       user: {
         id: user._id,
         firstName: user.firstName,
@@ -112,20 +77,22 @@ const login = async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
   }
 };
 
-// @desc    Get current user
+// @desc    Get current user (simplified - no auth required)
 // @route   GET /api/auth/me
-// @access  Private
+// @access  Public
 const getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    // Return first user as default (simplified for demo)
+    const user = await User.findOne().select('-password');
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'No users found'
       });
     }
 
@@ -134,7 +101,8 @@ const getMe = async (req, res, next) => {
       user
     });
   } catch (error) {
-    next(error);
+    console.error('GetMe error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
   }
 };
 

@@ -3,10 +3,9 @@ import { authAPI } from '../api/auth';
 
 const AuthContext = createContext();
 
-// Initial state
+// Initial state - simplified without tokens
 const initialState = {
   user: null,
-  token: localStorage.getItem('token'),
   isLoading: false,
   error: null,
   isAuthenticated: false,
@@ -38,7 +37,6 @@ const authReducer = (state, action) => {
         isLoading: false,
         isAuthenticated: true,
         user: action.payload.user,
-        token: action.payload.token,
         error: null,
       };
     case AUTH_ACTIONS.LOGIN_FAILURE:
@@ -47,14 +45,12 @@ const authReducer = (state, action) => {
         isLoading: false,
         isAuthenticated: false,
         user: null,
-        token: null,
         error: action.payload,
       };
     case AUTH_ACTIONS.LOGOUT:
       return {
         ...state,
         user: null,
-        token: null,
         isAuthenticated: false,
         error: null,
       };
@@ -69,7 +65,6 @@ const authReducer = (state, action) => {
       return {
         ...state,
         user: null,
-        token: null,
         isAuthenticated: false,
         isLoading: false,
       };
@@ -87,11 +82,9 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Load user on initial render if token exists
+  // Load user on initial render
   useEffect(() => {
     const loadUser = async () => {
-      if (!state.token) return;
-
       try {
         const response = await authAPI.getMe();
         dispatch({
@@ -102,26 +95,24 @@ export const AuthProvider = ({ children }) => {
         dispatch({
           type: AUTH_ACTIONS.LOAD_USER_FAILURE,
         });
-        localStorage.removeItem('token');
       }
     };
 
     loadUser();
-  }, [state.token]);
+  }, []);
 
   // Login
   const login = async (credentials) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
     try {
       const response = await authAPI.login(credentials);
-      const { token, user } = response.data;
+      const { user } = response.data;
 
-      localStorage.setItem('token', token);
       localStorage.setItem('userRole', user.role);
       localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: { token, user },
+        payload: { user },
       });
 
       return { success: true, user };
@@ -139,14 +130,13 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
     try {
       const response = await authAPI.register(userData);
-      const { token, user } = response.data;
+      const { user } = response.data;
 
-      localStorage.setItem('token', token);
       localStorage.setItem('userRole', user.role);
       localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: { token, user },
+        payload: { user },
       });
 
       return { success: true, user };
@@ -161,7 +151,6 @@ export const AuthProvider = ({ children }) => {
 
   // Logout
   const logout = () => {
-    localStorage.removeItem('token');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userName');
     dispatch({ type: AUTH_ACTIONS.LOGOUT });
