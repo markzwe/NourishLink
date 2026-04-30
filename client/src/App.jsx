@@ -1,8 +1,7 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Layout from './layouts/Layout'
-import ProtectedRoute from './components/ProtectedRoute'
 
 // Dashboard redirect component
 const DashboardRedirect = () => {
@@ -67,35 +66,35 @@ function App() {
             <Route path="/dashboard" element={<DashboardRedirect />} />
 
             {/* Client Routes */}
-            <Route path="/client/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
-            <Route path="/client/register" element={<ProtectedRoute><ClientRegistration /></ProtectedRoute>} />
-            <Route path="/client/upload-documents" element={<ProtectedRoute><UploadDocuments /></ProtectedRoute>} />
-            <Route path="/client/appointments" element={<ProtectedRoute><MyAppointments /></ProtectedRoute>} />
-            <Route path="/client/profile" element={<ProtectedRoute><UpdateProfile /></ProtectedRoute>} />
+            <Route path="/client/dashboard" element={<ClientDashboard />} />
+            <Route path="/client/register" element={<ClientRegistration />} />
+            <Route path="/client/upload-documents" element={<UploadDocuments />} />
+            <Route path="/client/appointments" element={<MyAppointments />} />
+            <Route path="/client/profile" element={<UpdateProfile />} />
 
             {/* Donor Routes */}
-            <Route path="/donor/dashboard" element={<ProtectedRoute><DonorDashboard /></ProtectedRoute>} />
-            <Route path="/donor/log-donation" element={<ProtectedRoute><LogDonation /></ProtectedRoute>} />
-            <Route path="/donor/history" element={<ProtectedRoute><DonationHistory /></ProtectedRoute>} />
-            <Route path="/donor/schedule-dropoff" element={<ProtectedRoute><ScheduleDropoff /></ProtectedRoute>} />
-            <Route path="/donor/receipts" element={<ProtectedRoute><Receipts /></ProtectedRoute>} />
-            <Route path="/donor/contact" element={<ProtectedRoute><ContactStaff /></ProtectedRoute>} />
+            <Route path="/donor/dashboard" element={<DonorDashboard />} />
+            <Route path="/donor/log-donation" element={<LogDonation />} />
+            <Route path="/donor/history" element={<DonationHistory />} />
+            <Route path="/donor/schedule-dropoff" element={<ScheduleDropoff />} />
+            <Route path="/donor/receipts" element={<Receipts />} />
+            <Route path="/donor/contact" element={<ContactStaff />} />
 
             {/* Volunteer Routes */}
-            <Route path="/volunteer/dashboard" element={<ProtectedRoute><VolunteerDashboard /></ProtectedRoute>} />
-            <Route path="/volunteer/shifts" element={<ProtectedRoute><AvailableShifts /></ProtectedRoute>} />
-            <Route path="/volunteer/my-shifts" element={<ProtectedRoute><MyShifts /></ProtectedRoute>} />
-            <Route path="/volunteer/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-            <Route path="/volunteer/history" element={<ProtectedRoute><VolunteerHistory /></ProtectedRoute>} />
+            <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
+            <Route path="/volunteer/shifts" element={<AvailableShifts />} />
+            <Route path="/volunteer/my-shifts" element={<MyShifts />} />
+            <Route path="/volunteer/tasks" element={<Tasks />} />
+            <Route path="/volunteer/history" element={<VolunteerHistory />} />
 
             {/* Staff Routes */}
-            <Route path="/staff/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
-            <Route path="/staff/applications" element={<ProtectedRoute><PendingApplications /></ProtectedRoute>} />
-            <Route path="/staff/inventory/categories" element={<ProtectedRoute><InventoryCategories /></ProtectedRoute>} />
-            <Route path="/staff/inventory/audit" element={<ProtectedRoute><InventoryAudit /></ProtectedRoute>} />
-            <Route path="/staff/donations" element={<ProtectedRoute><IncomingDonations /></ProtectedRoute>} />
-            <Route path="/staff/volunteers" element={<ProtectedRoute><VolunteerAssignments /></ProtectedRoute>} />
-            <Route path="/staff/reports" element={<ProtectedRoute><ReportsCenter /></ProtectedRoute>} />
+            <Route path="/staff/dashboard" element={<StaffDashboard />} />
+            <Route path="/staff/applications" element={<PendingApplications />} />
+            <Route path="/staff/inventory/categories" element={<InventoryCategories />} />
+            <Route path="/staff/inventory/audit" element={<InventoryAudit />} />
+            <Route path="/staff/donations" element={<IncomingDonations />} />
+            <Route path="/staff/volunteers" element={<VolunteerAssignments />} />
+            <Route path="/staff/reports" element={<ReportsCenter />} />
           </Routes>
         </Layout>
       </Router>

@@ -18,19 +18,19 @@ const StaffDashboard = () => {
           <div className="text-3xl font-bold text-orange-600">12</div>
           <p className="text-sm text-gray-600 mt-2">Awaiting review</p>
         </div>
-
+        
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Today's Appointments</h3>
           <div className="text-3xl font-bold text-blue-600">24</div>
           <p className="text-sm text-gray-600 mt-2">Scheduled pickups</p>
         </div>
-
+        
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Low Stock Items</h3>
           <div className="text-3xl font-bold text-red-600">8</div>
           <p className="text-sm text-gray-600 mt-2">Need restocking</p>
         </div>
-
+        
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Active Volunteers</h3>
           <div className="text-3xl font-bold text-green-600">15</div>

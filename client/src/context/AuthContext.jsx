@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     loadUser();
-  }, [state.token]);
+  }, []);
 
   // Login
   const login = async (credentials) => {
