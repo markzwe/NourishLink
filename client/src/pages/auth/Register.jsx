@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useAuth } from '../../context/AuthContext';
+import { authAPI } from '../../api/auth';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register: registerUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [registerError, setRegisterError] = useState('');
 
   const {
     register,
@@ -20,33 +20,47 @@ const Register = () => {
   const password = watch('password');
 
   const onSubmit = async (data) => {
+  const onSubmit = async (data) => {
     setIsSubmitting(true);
     setSuccessMessage('');
-    setErrorMessage('');
+    setRegisterError('');
 
     try {
-      const result = await registerUser({
+      // Call the actual API
+      const response = await authAPI.register({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
-        role: data.role,
+        role: data.role
       });
-
-      if (!result.success) {
-        setErrorMessage(result.error || 'Registration failed. Please try again.');
-      } else {
-        setSuccessMessage('Registration successful! Redirecting to login...');
+      
+      if (response.data.success) {
+        const user = response.data.user;
+        // Store user info
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
+        localStorage.setItem('userEmail', user.email);
+        localStorage.setItem('userId', user.id);
+        
+        setSuccessMessage('Account created successfully! Redirecting to dashboard...');
+        
+        // Redirect after short delay
         setTimeout(() => {
-          navigate('/login');
-        }, 1200);
+          navigate('/dashboard');
+        }, 1500);
+      } else {
+        setRegisterError(response.data.message || 'Registration failed');
       }
     } catch (error) {
-      setErrorMessage('Registration failed. Please try again.');
+      console.error('Registration error:', error);
+      setRegisterError(error.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+    }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -140,6 +154,7 @@ const Register = () => {
                 <option value="client">Client</option>
                 <option value="donor">Donor</option>
                 <option value="volunteer">Volunteer</option>
+                <option value="staff">Staff</option>
               </select>
               {errors.role && (
                 <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
@@ -196,6 +211,12 @@ const Register = () => {
           {successMessage && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
               {successMessage}
+            </div>
+          )}
+
+          {registerError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {registerError}
             </div>
           )}
 

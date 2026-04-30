@@ -5,16 +5,17 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 // Import routes
-// const clientRoutes = require('./routes/clients');
-// const appointmentRoutes = require('./routes/appointments');
-// const inventoryRoutes = require('./routes/inventory');
-// const donationRoutes = require('./routes/donations');
-// const volunteerRoutes = require('./routes/volunteers');
-// const reportRoutes = require('./routes/reports');
+const authRoutes = require('./routes/auth');
+const clientRoutes = require('./routes/clients');
+const appointmentRoutes = require('./routes/appointments');
+const inventoryRoutes = require('./routes/inventory');
+const donationRoutes = require('./routes/donations');
+const volunteerRoutes = require('./routes/volunteers');
+const reportRoutes = require('./routes/reports');
 
 // Import middleware
-// const errorHandler = require('./middleware/errorHandler');
-// const notFound = require('./middleware/notFound');
+const errorHandler = require('./middleware/errorHandler');
+const notFound = require('./middleware/notFound');
 
 const app = express();
 
@@ -35,9 +36,14 @@ app.use(express.urlencoded({ extended: true }));
 // Static files for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Auth route
-const authRoutes = require('./routes/auth');
+// API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api', donationRoutes);
+app.use('/api', volunteerRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -45,7 +51,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Error handling middleware
-// app.use(notFound);
-// app.use(errorHandler);
+app.use(notFound);
+app.use(errorHandler);
 
 module.exports = app;

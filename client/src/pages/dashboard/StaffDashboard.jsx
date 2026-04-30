@@ -8,7 +8,7 @@ const StaffDashboard = () => {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Staff Dashboard</h1>
-        {/* <p className="text-gray-600 mt-2">Welcome back, {user?.firstName}!</p> */}
+        <p className="text-gray-600 mt-2">Welcome back, {user?.firstName || 'Staff'}!</p>
       </div>
 
       {/* Quick Stats */}
@@ -35,25 +35,6 @@ const StaffDashboard = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Active Volunteers</h3>
           <div className="text-3xl font-bold text-green-600">15</div>
           <p className="text-sm text-gray-600 mt-2">On shift today</p>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700">
-            Review Applications
-          </button>
-          <button className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700">
-            Manage Inventory
-          </button>
-          <button className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700">
-            Process Donations
-          </button>
-          <button className="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700">
-            Generate Reports
-          </button>
         </div>
       </div>
 

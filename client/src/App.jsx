@@ -4,6 +4,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Layout from './layouts/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 
+// Dashboard redirect component
+const DashboardRedirect = () => {
+  const role = localStorage.getItem('userRole')
+  switch (role) {
+    case 'staff': return <Navigate to="/staff/dashboard" replace />
+    case 'client': return <Navigate to="/client/dashboard" replace />
+    case 'donor': return <Navigate to="/donor/dashboard" replace />
+    case 'volunteer': return <Navigate to="/volunteer/dashboard" replace />
+    default: return <Navigate to="/login" replace />
+  }
+}
+
 // Import pages
 import Home from './pages/Home'
 import Login from './pages/auth/Login'
@@ -17,7 +29,7 @@ import MyAppointments from './pages/clients/MyAppointments'
 import UpdateProfile from './pages/clients/UpdateProfile'
 
 // Donor pages
-import DonorDashboard from './pages/donors/DonorDashboard'
+import DonorDashboard from './pages/dashboard/DonorDashboard'
 import LogDonation from './pages/donors/LogDonation'
 import DonationHistory from './pages/donors/DonationHistory'
 import ScheduleDropoff from './pages/donors/ScheduleDropoff'
@@ -52,6 +64,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<DashboardRedirect />} />
 
             {/* Client Routes */}
             <Route path="/client/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
