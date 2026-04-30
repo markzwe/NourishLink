@@ -188,7 +188,7 @@ router.patch('/shifts/:id/checkout', async (req, res, next) => {
 // @desc    Get volunteer history
 // @route   GET /api/volunteers/history/me
 // @access  Private (Volunteer)
-router.get('/history/me', authorize('volunteer'), async (req, res, next) => {
+router.get('/volunteers/history/me', authorize('volunteer'), async (req, res, next) => {
   try {
     // This would get volunteer's shift history
     // For now, return empty array as placeholder

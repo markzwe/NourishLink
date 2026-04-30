@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { volunteersAPI } from '../../api/volunteers';
 
 const AvailableShifts = () => {
-  const [shifts] = useState([
+  const [shifts, setShifts] = useState([
     {
       id: 1,
       shiftDate: '2023-12-16',
@@ -66,24 +67,42 @@ const AvailableShifts = () => {
 
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [signUpStatus, setSignUpStatus] = useState({});
+  const [pageError, setPageError] = useState('');
+
+  React.useEffect(() => {
+    const loadShifts = async () => {
+      try {
+        const response = await volunteersAPI.getShifts();
+        if (Array.isArray(response.data?.data) && response.data.data.length > 0) {
+          setShifts(response.data.data);
+        }
+      } catch (error) {
+        setPageError(error.response?.data?.message || 'Unable to load shifts.');
+      }
+    };
+    loadShifts();
+  }, []);
 
   const handleSignUp = async (shiftId) => {
     setSignUpStatus(prev => ({ ...prev, [shiftId]: 'signing' }));
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await volunteersAPI.signupForShift(shiftId);
       
       setSignUpStatus(prev => ({ ...prev, [shiftId]: 'signed' }));
-      
-      // Show success message
-      alert('Successfully signed up for shift! You will receive a confirmation email.');
+      setShifts((prevShifts) =>
+        prevShifts.map((shift) =>
+          shift.id === shiftId || shift._id === shiftId
+            ? { ...shift, currentVolunteers: (shift.currentVolunteers || 0) + 1 }
+            : shift
+        )
+      );
       
       setTimeout(() => {
         setSignUpStatus(prev => ({ ...prev, [shiftId]: null }));
       }, 2000);
     } catch (error) {
-      console.error('Sign up error:', error);
+      setPageError(error.response?.data?.message || 'Sign up failed.');
       setSignUpStatus(prev => ({ ...prev, [shiftId]: 'error' }));
     }
   };
@@ -107,6 +126,11 @@ const AvailableShifts = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Available Shifts</h1>
         <p className="text-gray-600 mt-2">Browse and sign up for volunteer shifts.</p>
+        {pageError && (
+          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700">
+            {pageError}
+          </div>
+        )}
       </div>
 
       {/* Filter */}
@@ -144,7 +168,7 @@ const AvailableShifts = () => {
           </div>
         ) : (
           filteredShifts.map(shift => (
-            <div key={shift.id} className="bg-white rounded-lg shadow-md p-6">
+            <div key={shift.id || shift._id} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">
@@ -208,23 +232,23 @@ const AvailableShifts = () => {
               </div>
 
               <button
-                onClick={() => handleSignUp(shift.id)}
-                disabled={shift.currentVolunteers >= shift.capacity || signUpStatus[shift.id]}
+                onClick={() => handleSignUp(shift.id || shift._id)}
+                disabled={shift.currentVolunteers >= shift.capacity || signUpStatus[shift.id || shift._id]}
                 className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
                   shift.currentVolunteers >= shift.capacity
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : signUpStatus[shift.id] === 'signing'
+                    : signUpStatus[shift.id || shift._id] === 'signing'
                     ? 'bg-yellow-600 text-white'
-                    : signUpStatus[shift.id] === 'signed'
+                    : signUpStatus[shift.id || shift._id] === 'signed'
                     ? 'bg-green-600 text-white'
-                    : signUpStatus[shift.id] === 'error'
+                    : signUpStatus[shift.id || shift._id] === 'error'
                     ? 'bg-red-600 text-white'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
-                {signUpStatus[shift.id] === 'signing' ? 'Signing Up...' :
-                 signUpStatus[shift.id] === 'signed' ? 'Signed Up!' :
-                 signUpStatus[shift.id] === 'error' ? 'Error - Try Again' :
+                {signUpStatus[shift.id || shift._id] === 'signing' ? 'Signing Up...' :
+                 signUpStatus[shift.id || shift._id] === 'signed' ? 'Signed Up!' :
+                 signUpStatus[shift.id || shift._id] === 'error' ? 'Error - Try Again' :
                  shift.currentVolunteers >= shift.capacity ? 'Full' :
                  'Sign Up'}
               </button>

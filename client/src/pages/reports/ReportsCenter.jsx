@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { reportsAPI } from '../../api/reports';
 
 const ReportsCenter = () => {
   const [selectedReport, setSelectedReport] = useState(null);
@@ -14,138 +15,73 @@ const ReportsCenter = () => {
       name: 'Summary Report',
       description: 'Overall pantry metrics and statistics',
       icon: 'assessment',
-      data: {
-        totalClients: 150,
-        activeClients: 120,
-        totalDonations: 450,
-        totalVolunteers: 25,
-        activeVolunteers: 20,
-        lowStockItems: 8,
-        pendingApplications: 12,
-        monthlyTrend: [
-          { month: 'Oct', clients: 145, donations: 420, volunteers: 23 },
-          { month: 'Nov', clients: 148, donations: 435, volunteers: 24 },
-          { month: 'Dec', clients: 150, donations: 450, volunteers: 25 },
-        ],
-      },
+      data: null,
     },
     {
       id: 'inventory',
       name: 'Inventory Report',
       description: 'Current inventory levels and movements',
       icon: 'inventory',
-      data: {
-        totalItems: 85,
-        lowStockItems: 8,
-        expiringItems: 12,
-        totalValue: 15000,
-        categories: [
-          { name: 'Canned Goods', count: 25, value: 3000, lowStock: 3 },
-          { name: 'Fresh Produce', count: 20, value: 2000, lowStock: 2 },
-          { name: 'Dry Goods', count: 15, value: 4000, lowStock: 1 },
-          { name: 'Dairy', count: 10, value: 2500, lowStock: 2 },
-          { name: 'Meat', count: 8, value: 3500, lowStock: 0 },
-          { name: 'Bakery', count: 7, value: 1000, lowStock: 0 },
-        ],
-        recentAudits: 15,
-        totalVariance: 23,
-      },
+      data: null,
     },
     {
       id: 'donations',
       name: 'Donations Report',
       description: 'Donation trends and donor analytics',
       icon: 'volunteer_activism',
-      data: {
-        totalDonations: 450,
-        totalWeight: 12500,
-        totalValue: 25000,
-        topDonors: [
-          { name: 'Local Grocery Store', donations: 45, weight: 3500, value: 7000 },
-          { name: 'Food Bank', donations: 32, weight: 2800, value: 5600 },
-          { name: 'Community Farm', donations: 28, weight: 2200, value: 4400 },
-        ],
-        monthlyTrend: [
-          { month: 'Oct', donations: 140, weight: 3900, value: 7800 },
-          { month: 'Nov', donations: 145, weight: 4100, value: 8200 },
-          { month: 'Dec', donations: 165, weight: 4500, value: 9000 },
-        ],
-        categories: [
-          { type: 'canned_goods', count: 180, percentage: 40 },
-          { type: 'fresh_produce', count: 90, percentage: 20 },
-          { type: 'dry_goods', count: 90, percentage: 20 },
-          { type: 'dairy', count: 45, percentage: 10 },
-          { type: 'meat', count: 27, percentage: 6 },
-          { type: 'bakery', count: 18, percentage: 4 },
-        ],
-      },
+      data: null,
     },
     {
       id: 'volunteers',
       name: 'Volunteers Report',
       description: 'Volunteer hours and engagement metrics',
       icon: 'people',
-      data: {
-        totalVolunteers: 25,
-        activeVolunteers: 20,
-        totalHours: 1250,
-        averageHoursPerVolunteer: 50,
-        topVolunteers: [
-          { name: 'John Smith', hours: 120, shifts: 30, skills: ['food_distribution', 'inventory_management'] },
-          { name: 'Jane Doe', hours: 95, shifts: 24, skills: ['client_services', 'bilingual'] },
-          { name: 'Bob Johnson', hours: 88, shifts: 22, skills: ['donation_processing', 'heavy_lifting'] },
-        ],
-        skillDistribution: [
-          { skill: 'Food Distribution', count: 15, hours: 600 },
-          { skill: 'Inventory Management', count: 8, hours: 320 },
-          { skill: 'Donation Processing', count: 12, hours: 480 },
-          { skill: 'Client Services', count: 10, hours: 400 },
-        ],
-        retentionRate: 85,
-        newVolunteersThisMonth: 3,
-      },
+      data: null,
     },
     {
       id: 'clients',
       name: 'Clients Report',
       description: 'Client demographics and service utilization',
       icon: 'family_restroom',
-      data: {
-        totalClients: 150,
-        activeClients: 120,
-        pendingApplications: 12,
-        averageHouseholdSize: 3.2,
-        monthlyVisits: 240,
-        demographics: {
-          households: [
-            { size: '1-2', count: 45, percentage: 30 },
-            { size: '3-4', count: 65, percentage: 43 },
-            { size: '5+', count: 40, percentage: 27 },
-          ],
-          visitFrequency: [
-            { frequency: 'Weekly', count: 80, percentage: 53 },
-            { frequency: 'Bi-weekly', count: 60, percentage: 40 },
-            { frequency: 'Monthly', count: 10, percentage: 7 },
-          ],
-        },
-        satisfactionRate: 92,
-        newClientsThisMonth: 8,
-      },
+      data: null,
     },
   ];
 
+  const [pageError, setPageError] = useState('');
+
+  const fetchReportData = async (reportId) => {
+    const params = { startDate: dateRange.start, endDate: dateRange.end };
+    switch (reportId) {
+      case 'summary':
+        return reportsAPI.getSummary(params);
+      case 'inventory':
+        return reportsAPI.getInventory(params);
+      case 'donations':
+        return reportsAPI.getDonations(params);
+      case 'volunteers':
+        return reportsAPI.getVolunteers(params);
+      case 'clients':
+        return reportsAPI.getClients(params);
+      default:
+        throw new Error('Unknown report type');
+    }
+  };
+
   const handleGenerateReport = async (reportId) => {
     setGeneratingReport(reportId);
+    setPageError('');
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const report = reportTypes.find(r => r.id === reportId);
-      setSelectedReport(report);
+      const reportResponse = await fetchReportData(reportId);
+      const report = reportTypes.find((r) => r.id === reportId);
+      setSelectedReport({
+        ...report,
+        data: reportResponse.data?.data || {},
+      });
       
       setGeneratingReport(null);
     } catch (error) {
-      console.error('Generate report error:', error);
+      setPageError(error.response?.data?.message || 'Unable to generate report.');
       setGeneratingReport(null);
     }
   };
@@ -167,6 +103,11 @@ const ReportsCenter = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Reports Center</h1>
         <p className="text-gray-600 mt-2">Generate and download comprehensive reports for pantry operations.</p>
+        {pageError && (
+          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700">
+            {pageError}
+          </div>
+        )}
       </div>
 
       {/* Date Range Selector */}

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../context/AuthContext';
+import { clientsAPI } from '../../api/clients';
 
 const ClientRegistration = () => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   
   const {
     register,
@@ -15,17 +17,14 @@ const ClientRegistration = () => {
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
+    setSubmitError('');
     
     try {
-      // This would make an API call to create client profile
-      console.log('Client registration data:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await clientsAPI.createClient(data);
       
       setSubmitSuccess(true);
     } catch (error) {
-      console.error('Registration error:', error);
+      setSubmitError(error.response?.data?.message || 'Unable to submit registration.');
     } finally {
       setIsSubmitting(false);
     }
@@ -55,6 +54,11 @@ const ClientRegistration = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Client Registration</h1>
         <p className="text-gray-600 mt-2">Please complete your profile to access food pantry services.</p>
+        {submitError && (
+          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700">
+            {submitError}
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

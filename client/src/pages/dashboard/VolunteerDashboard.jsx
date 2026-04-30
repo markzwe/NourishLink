@@ -32,25 +32,6 @@ const VolunteerDashboard = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700">
-            View Available Shifts
-          </button>
-          <button className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700">
-            Check In
-          </button>
-          <button className="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700">
-            My Schedule
-          </button>
-          <button className="bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700">
-            View History
-          </button>
-        </div>
-      </div>
-
       {/* Upcoming Shifts */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Shifts</h2>

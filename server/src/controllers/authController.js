@@ -89,7 +89,6 @@ const login = async (req, res) => {
 // @access  Public
 const getMe = async (req, res) => {
   try {
-    // Return first user as default (simplified for demo)
     const user = await User.findOne().select('-password');
     if (!user) {
       return res.status(404).json({

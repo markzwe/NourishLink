@@ -38,25 +38,6 @@ const StaffDashboard = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700">
-            Review Applications
-          </button>
-          <button className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700">
-            Manage Inventory
-          </button>
-          <button className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700">
-            Process Donations
-          </button>
-          <button className="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700">
-            Generate Reports
-          </button>
-        </div>
-      </div>
-
       {/* Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6">

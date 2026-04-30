@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { donationsAPI } from '../../api/donations';
 
 const LogDonation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [donationItems, setDonationItems] = useState([{ itemType: '', description: '', quantity: '', condition: '' }]);
   
   const {
@@ -29,23 +31,19 @@ const LogDonation = () => {
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
+    setSubmitError('');
     
     try {
-      // This would make an API call to log the donation
       const donationData = {
         ...data,
         items: donationItems,
       };
-      
-      console.log('Donation data:', donationData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await donationsAPI.createDonation(donationData);
       
       setSubmitSuccess(true);
       setDonationItems([{ itemType: '', description: '', quantity: '', condition: '' }]);
     } catch (error) {
-      console.error('Donation logging error:', error);
+      setSubmitError(error.response?.data?.message || 'Unable to log donation.');
     } finally {
       setIsSubmitting(false);
     }
@@ -75,6 +73,11 @@ const LogDonation = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Log Donation</h1>
         <p className="text-gray-600 mt-2">Record your donation details for processing.</p>
+        {submitError && (
+          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700">
+            {submitError}
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

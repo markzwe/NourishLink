@@ -1,58 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { donationsAPI } from '../../api/donations';
 
 const DonationHistory = () => {
-  const [donations] = useState([
-    {
-      id: 1,
-      dropoffDate: '2023-12-10',
-      dropoffTime: '10:00 AM',
-      status: 'completed',
-      totalWeight: 25,
-      items: [
-        { itemType: 'canned_goods', description: 'Canned vegetables', quantity: '15 cans' },
-        { itemType: 'dry_goods', description: 'Rice and pasta', quantity: '10 lbs' },
-      ],
-      receiptGenerated: true,
-    },
-    {
-      id: 2,
-      dropoffDate: '2023-12-05',
-      dropoffTime: '2:00 PM',
-      status: 'completed',
-      totalWeight: 50,
-      items: [
-        { itemType: 'fresh_produce', description: 'Fresh vegetables', quantity: '30 lbs' },
-        { itemType: 'bakery', description: 'Bread and pastries', quantity: '20 lbs' },
-      ],
-      receiptGenerated: true,
-    },
-    {
-      id: 3,
-      dropoffDate: '2023-11-28',
-      dropoffTime: '3:00 PM',
-      status: 'completed',
-      totalWeight: 30,
-      items: [
-        { itemType: 'dairy', description: 'Milk and cheese', quantity: '20 lbs' },
-        { itemType: 'meat', description: 'Frozen meat', quantity: '10 lbs' },
-      ],
-      receiptGenerated: true,
-    },
-    {
-      id: 4,
-      dropoffDate: '2023-12-15',
-      dropoffTime: '11:00 AM',
-      status: 'pending',
-      totalWeight: 40,
-      items: [
-        { itemType: 'canned_goods', description: 'Canned fruits', quantity: '25 cans' },
-        { itemType: 'dry_goods', description: 'Cereal and oatmeal', quantity: '15 lbs' },
-      ],
-      receiptGenerated: false,
-    },
-  ]);
+  const [donations, setDonations] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState('');
 
   const [filter, setFilter] = useState('all');
+
+  useEffect(() => {
+    const loadDonations = async () => {
+      try {
+        setIsLoading(true);
+        const response = await donationsAPI.getMyDonations();
+        setDonations(response.data?.data || []);
+      } catch (error) {
+        setPageError(error.response?.data?.message || 'Unable to load donation history.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDonations();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -71,11 +41,25 @@ const DonationHistory = () => {
   const totalWeight = donations.reduce((sum, donation) => sum + donation.totalWeight, 0);
   const completedDonations = donations.filter(d => d.status === 'completed').length;
 
+  const handleDownloadReceipt = async (donationId) => {
+    try {
+      await donationsAPI.getReceipt(donationId);
+      alert('Receipt generated successfully.');
+    } catch (error) {
+      setPageError(error.response?.data?.message || 'Unable to generate receipt.');
+    }
+  };
+
   return (
     <div style={{ padding: "20px", background: "white" }}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Donation History</h1>
         <p className="text-gray-600 mt-2">View and manage your donation records.</p>
+        {pageError && (
+          <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700">
+            {pageError}
+          </div>
+        )}
       </div>
 
       {/* Summary Stats */}
@@ -128,7 +112,11 @@ const DonationHistory = () => {
 
       {/* Donations List */}
       <div className="space-y-4">
-        {filteredDonations.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <p className="text-gray-500">Loading donation history...</p>
+          </div>
+        ) : filteredDonations.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-500">No donations found matching the selected filter.</p>
           </div>
@@ -160,8 +148,11 @@ const DonationHistory = () => {
                 </div>
                 
                 <div className="flex space-x-2">
-                  {donation.receiptGenerated && (
-                    <button className="text-green-600 hover:text-green-800 text-sm">
+                  {donation.status === 'completed' && (
+                    <button
+                      onClick={() => handleDownloadReceipt(donation.id)}
+                      className="text-green-600 hover:text-green-800 text-sm"
+                    >
                       Download Receipt
                     </button>
                   )}
