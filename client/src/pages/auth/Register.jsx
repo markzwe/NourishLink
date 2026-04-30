@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { authAPI } from '../../api/auth';
 
@@ -18,6 +19,7 @@ const Register = () => {
 
   const password = watch('password');
 
+  const onSubmit = async (data) => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     setSuccessMessage('');
@@ -55,6 +57,7 @@ const Register = () => {
       setRegisterError(error.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
     }
   };
 
@@ -200,6 +203,11 @@ const Register = () => {
             </div>
           </div>
 
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {errorMessage}
+            </div>
+          )}
           {successMessage && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
               {successMessage}

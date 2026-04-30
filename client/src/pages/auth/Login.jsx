@@ -5,6 +5,7 @@ import { authAPI } from '../../api/auth';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login, isAuthenticated, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState('');
 
@@ -14,6 +15,7 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
+  const onSubmit = async (data) => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     setLoginError('');
@@ -54,14 +56,14 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-           Login
+            Login
           </h2>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
               <input
@@ -70,8 +72,14 @@ const Login = () => {
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                     message: 'Invalid email address',
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email address',
                   },
                 })}
+                type="email"
+                autoComplete="email"
                 type="email"
                 autoComplete="email"
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
@@ -79,9 +87,11 @@ const Login = () => {
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
-             {/* Password */}
+            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
@@ -105,6 +115,11 @@ const Login = () => {
             </div>
           </div>
 
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {errorMessage}
+            </div>
+          )}
           <div>
             <button
               type="submit"

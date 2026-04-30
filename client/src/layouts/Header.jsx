@@ -1,21 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Header = ({ isMobile, sidebarOpen, onToggleSidebar }) => {
-  const [userRole, setUserRole] = useState(null);
-  const [userName, setUserName] = useState(null);
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
 
-  useEffect(() => {
-    const role = localStorage.getItem('userRole');
-    const name = localStorage.getItem('userName');
-    setUserRole(role);
-    setUserName(name);
-  }, []);
+  const userRole = user?.role;
+  const userName = user ? `${user.firstName} ${user.lastName}` : null;
 
   const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    window.location.href = '/login';
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -44,7 +40,7 @@ const Header = ({ isMobile, sidebarOpen, onToggleSidebar }) => {
             <Link to="/" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium">
               Home
             </Link>
-            {userRole ? (
+            {isAuthenticated ? (
               <Link
                 to={`/${userRole}/dashboard`}
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
@@ -58,7 +54,7 @@ const Header = ({ isMobile, sidebarOpen, onToggleSidebar }) => {
             )}
           </nav>
 
-          {userRole && (
+          {isAuthenticated && (
             <div className="hidden md:flex items-center space-x-4">
               <span className="text-sm text-gray-700">Welcome, {userName}</span>
               <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{userRole}</span>

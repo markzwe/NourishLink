@@ -18,13 +18,13 @@ const DonorDashboard = () => {
           <div className="text-3xl font-bold text-green-600">24</div>
           <p className="text-sm text-gray-600 mt-2">This year</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Weight</h3>
           <div className="text-3xl font-bold text-blue-600">450 lbs</div>
           <p className="text-sm text-gray-600 mt-2">YTD contribution</p>
         </div>
-        
+
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Next Drop-off</h3>
           <div className="text-3xl font-bold text-purple-600">Dec 20</div>
