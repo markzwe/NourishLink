@@ -109,12 +109,41 @@ router.patch('/volunteers/:id', async (req, res, next) => {
 // @access  Private (Volunteer/Staff)
 router.get('/shifts', authorize('volunteer', 'staff'), async (req, res, next) => {
   try {
-    // This would get available shifts from the database
-    // For now, return empty array as placeholder
+    // Sample shift payload for the volunteer dashboard
+    const sampleShifts = [
+      {
+        _id: 'shift-1',
+        taskRole: 'Food Distribution',
+        shiftDate: '2026-05-03',
+        startTime: '10:00 AM',
+        endTime: '2:00 PM',
+        location: 'Downtown Pantry',
+        status: 'open',
+      },
+      {
+        _id: 'shift-2',
+        taskRole: 'Inventory Support',
+        shiftDate: '2026-05-06',
+        startTime: '1:00 PM',
+        endTime: '5:00 PM',
+        location: 'Warehouse A',
+        status: 'open',
+      },
+      {
+        _id: 'shift-3',
+        taskRole: 'Donation Sorting',
+        shiftDate: '2026-05-08',
+        startTime: '9:00 AM',
+        endTime: '12:00 PM',
+        location: 'Main Center',
+        status: 'open',
+      },
+    ];
+
     res.status(200).json({
       success: true,
-      count: 0,
-      data: []
+      count: sampleShifts.length,
+      data: sampleShifts,
     });
   } catch (error) {
     next(error);
@@ -190,12 +219,40 @@ router.patch('/shifts/:id/checkout', async (req, res, next) => {
 // @access  Private (Volunteer)
 router.get('/volunteers/history/me', authorize('volunteer'), async (req, res, next) => {
   try {
-    // This would get volunteer's shift history
-    // For now, return empty array as placeholder
+    const sampleHistory = [
+      {
+        _id: 'history-1',
+        taskRole: 'Food Distribution',
+        shiftDate: '2026-04-25',
+        startTime: '10:00 AM',
+        endTime: '2:00 PM',
+        location: 'Downtown Pantry',
+        status: 'completed',
+      },
+      {
+        _id: 'history-2',
+        taskRole: 'Donation Sorting',
+        shiftDate: '2026-04-18',
+        startTime: '9:00 AM',
+        endTime: '12:00 PM',
+        location: 'Main Center',
+        status: 'completed',
+      },
+      {
+        _id: 'history-3',
+        taskRole: 'Inventory Support',
+        shiftDate: '2026-04-10',
+        startTime: '1:00 PM',
+        endTime: '5:00 PM',
+        location: 'Warehouse A',
+        status: 'completed',
+      },
+    ];
+
     res.status(200).json({
       success: true,
-      count: 0,
-      data: []
+      count: sampleHistory.length,
+      data: sampleHistory,
     });
   } catch (error) {
     next(error);

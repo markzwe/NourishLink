@@ -7,6 +7,8 @@ const MyAppointments = () => {
   const [pageError, setPageError] = useState('');
 
   const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [editingAppointment, setEditingAppointment] = useState(null);
   const [newAppointment, setNewAppointment] = useState({
     date: '',
     slot: '',
@@ -68,6 +70,46 @@ const MyAppointments = () => {
     evening: { start: '5:00 PM', end: '7:00 PM' },
   };
 
+  const getSlotKey = (timeSlot) => {
+    const match = Object.entries(slotMap).find(
+      ([, slot]) => slot.start === timeSlot.start && slot.end === timeSlot.end
+    );
+    return match ? match[0] : '';
+  };
+
+  const resetAppointmentForm = () => {
+    setEditingAppointment(null);
+    setNewAppointment({ date: '', slot: '', dietaryNotes: '' });
+    setShowScheduleForm(false);
+    setPageError('');
+  };
+
+  const handleViewDetails = (appointment) => {
+    setSelectedAppointment(appointment);
+  };
+
+  const handleEditAppointment = (appointment) => {
+    setEditingAppointment(appointment);
+    setShowScheduleForm(true);
+    setPageError('');
+    setNewAppointment({
+      date: appointment.date?.substring(0, 10) || '',
+      slot: getSlotKey(appointment.timeSlot),
+      dietaryNotes: appointment.dietaryNotes || '',
+    });
+  };
+
+  const handleScheduleAgain = (appointment) => {
+    setEditingAppointment(null);
+    setShowScheduleForm(true);
+    setPageError('');
+    setNewAppointment({
+      date: '',
+      slot: getSlotKey(appointment.timeSlot),
+      dietaryNotes: appointment.dietaryNotes || '',
+    });
+  };
+
   const handleScheduleAppointment = async () => {
     if (!newAppointment.date || !newAppointment.slot) {
       setPageError('Please select a date and time slot.');
@@ -77,29 +119,52 @@ const MyAppointments = () => {
     try {
       setPageError('');
       const timeSlot = slotMap[newAppointment.slot];
-      const response = await appointmentsAPI.createAppointment({
-        appointmentDate: newAppointment.date,
-        timeSlot,
-        dietaryNotes: newAppointment.dietaryNotes,
-      });
 
-      const created = response.data?.data;
-      if (created) {
-        setAppointments((prev) => ([
-          ...prev,
-          {
-            id: created._id,
-            date: created.appointmentDate,
-            timeSlot: created.timeSlot,
-            status: created.status,
-            dietaryNotes: created.dietaryNotes,
-          },
-        ]));
+      if (editingAppointment) {
+        const response = await appointmentsAPI.updateAppointment(editingAppointment.id, {
+          appointmentDate: newAppointment.date,
+          timeSlot,
+          dietaryNotes: newAppointment.dietaryNotes,
+        });
+
+        const updated = response.data?.data;
+        if (updated) {
+          setAppointments((prev) => prev.map((appointment) =>
+            appointment.id === editingAppointment.id
+              ? {
+                ...appointment,
+                date: updated.appointmentDate,
+                timeSlot: updated.timeSlot,
+                dietaryNotes: updated.dietaryNotes,
+              }
+              : appointment
+          ));
+        }
+      } else {
+        const response = await appointmentsAPI.createAppointment({
+          appointmentDate: newAppointment.date,
+          timeSlot,
+          dietaryNotes: newAppointment.dietaryNotes,
+        });
+
+        const created = response.data?.data;
+        if (created) {
+          setAppointments((prev) => ([
+            ...prev,
+            {
+              id: created._id,
+              date: created.appointmentDate,
+              timeSlot: created.timeSlot,
+              status: created.status,
+              dietaryNotes: created.dietaryNotes,
+            },
+          ]));
+        }
       }
-      setShowScheduleForm(false);
-      setNewAppointment({ date: '', slot: '', dietaryNotes: '' });
+
+      resetAppointmentForm();
     } catch (error) {
-      setPageError(error.response?.data?.message || 'Unable to schedule appointment.');
+      setPageError(error.response?.data?.message || 'Unable to save appointment.');
     }
   };
 
@@ -129,8 +194,10 @@ const MyAppointments = () => {
       {/* Schedule Appointment Form */}
       {showScheduleForm && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Schedule New Appointment</h2>
-          
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            {editingAppointment ? 'Edit Appointment' : 'Schedule New Appointment'}
+          </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -143,7 +210,7 @@ const MyAppointments = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Preferred Time Slot
@@ -176,7 +243,7 @@ const MyAppointments = () => {
 
           <div className="mt-6 flex justify-end space-x-4">
             <button
-              onClick={() => setShowScheduleForm(false)}
+              onClick={resetAppointmentForm}
               className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
             >
               Cancel
@@ -185,7 +252,7 @@ const MyAppointments = () => {
               onClick={handleScheduleAppointment}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
             >
-              Schedule Appointment
+              {editingAppointment ? 'Save Changes' : 'Schedule Appointment'}
             </button>
           </div>
         </div>
@@ -194,7 +261,7 @@ const MyAppointments = () => {
       {/* Upcoming Appointments */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Appointments</h2>
-        
+
         {isLoading ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-500">Loading appointments...</p>
@@ -228,11 +295,11 @@ const MyAppointments = () => {
                         {appointment.status}
                       </span>
                     </div>
-                    
+
                     <p className="text-gray-600 mb-2">
                       Time: {appointment.timeSlot.start} - {appointment.timeSlot.end}
                     </p>
-                    
+
                     {appointment.dietaryNotes && (
                       <div className="bg-gray-50 p-3 rounded">
                         <p className="text-sm font-medium text-gray-700 mb-1">Dietary Notes:</p>
@@ -240,9 +307,12 @@ const MyAppointments = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-800 text-sm">
+                    <button
+                      onClick={() => handleEditAppointment(appointment)}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
                       Edit
                     </button>
                     <button
@@ -262,7 +332,7 @@ const MyAppointments = () => {
       {/* Past Appointments */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Past Appointments</h2>
-        
+
         {pastAppointments.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-500">No past appointments.</p>
@@ -286,11 +356,11 @@ const MyAppointments = () => {
                         {appointment.status}
                       </span>
                     </div>
-                    
+
                     <p className="text-gray-600 mb-2">
                       Time: {appointment.timeSlot.start} - {appointment.timeSlot.end}
                     </p>
-                    
+
                     {appointment.dietaryNotes && (
                       <div className="bg-gray-50 p-3 rounded">
                         <p className="text-sm font-medium text-gray-700 mb-1">Dietary Notes:</p>
@@ -298,12 +368,18 @@ const MyAppointments = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-800 text-sm">
+                    <button
+                      onClick={() => handleViewDetails(appointment)}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
                       View Details
                     </button>
-                    <button className="text-green-600 hover:text-green-800 text-sm">
+                    <button
+                      onClick={() => handleScheduleAgain(appointment)}
+                      className="text-green-600 hover:text-green-800 text-sm"
+                    >
                       Schedule Again
                     </button>
                   </div>
@@ -313,6 +389,62 @@ const MyAppointments = () => {
           </div>
         )}
       </div>
+
+      {selectedAppointment && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 py-6">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Appointment Details</h2>
+                <p className="text-sm text-gray-500">Review your past appointment information.</p>
+              </div>
+              <button
+                onClick={() => setSelectedAppointment(null)}
+                className="rounded-full bg-gray-100 px-3 py-1 text-gray-600 hover:bg-gray-200"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <div>
+                <p className="text-sm text-gray-500">Date</p>
+                <p className="text-lg font-medium text-gray-900">
+                  {new Date(selectedAppointment.date).toLocaleDateString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                  })}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Time</p>
+                <p className="text-lg font-medium text-gray-900">
+                  {selectedAppointment.timeSlot.start} - {selectedAppointment.timeSlot.end}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Status</p>
+                <p className="text-lg font-medium text-gray-900">{selectedAppointment.status}</p>
+              </div>
+
+              {selectedAppointment.dietaryNotes && (
+                <div>
+                  <p className="text-sm text-gray-500">Dietary Notes</p>
+                  <p className="text-lg font-medium text-gray-900">{selectedAppointment.dietaryNotes}</p>
+                </div>
+              )}
+
+              {selectedAppointment.cancellationReason && (
+                <div>
+                  <p className="text-sm text-gray-500">Cancellation Reason</p>
+                  <p className="text-lg font-medium text-gray-900">{selectedAppointment.cancellationReason}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

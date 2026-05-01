@@ -3,9 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Layout from './layouts/Layout'
 
+import { useAuth } from './context/AuthContext';
+
 // Dashboard redirect component
 const DashboardRedirect = () => {
-  const role = localStorage.getItem('userRole')
+  const { user } = useAuth();
+  const role = user?.role;
+
   switch (role) {
     case 'staff': return <Navigate to="/staff/dashboard" replace />
     case 'client': return <Navigate to="/client/dashboard" replace />

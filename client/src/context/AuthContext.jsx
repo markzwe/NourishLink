@@ -89,7 +89,7 @@ export const AuthProvider = ({ children }) => {
       const userRole = localStorage.getItem('userRole');
       const userName = localStorage.getItem('userName');
       const userEmail = localStorage.getItem('userEmail');
-      
+
       if (userId && userRole) {
         dispatch({
           type: AUTH_ACTIONS.LOAD_USER_SUCCESS,
@@ -116,21 +116,21 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
     try {
       const response = await authAPI.login(credentials);
-      
+
       if (response.data.success) {
         const user = response.data.user;
-        
+
         // Store user info in localStorage
         localStorage.setItem('userId', user.id);
         localStorage.setItem('userRole', user.role);
         localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
         localStorage.setItem('userEmail', user.email);
-        
+
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
           payload: { user },
         });
-        
+
         return { success: true, user };
       } else {
         dispatch({
@@ -153,21 +153,21 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.LOGIN_START });
     try {
       const response = await authAPI.register(userData);
-      
+
       if (response.data.success) {
         const user = response.data.user;
-        
+
         // Store user info in localStorage
         localStorage.setItem('userId', user.id);
         localStorage.setItem('userRole', user.role);
         localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
         localStorage.setItem('userEmail', user.email);
-        
+
         dispatch({
           type: AUTH_ACTIONS.LOGIN_SUCCESS,
           payload: { user },
         });
-        
+
         return { success: true, user };
       } else {
         dispatch({
@@ -199,12 +199,33 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
   };
 
+  const updateUser = (userData) => {
+    const normalizedUser = {
+      id: userData.id || userData._id,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      role: userData.role,
+    };
+
+    localStorage.setItem('userId', normalizedUser.id);
+    localStorage.setItem('userRole', normalizedUser.role);
+    localStorage.setItem('userName', `${normalizedUser.firstName} ${normalizedUser.lastName}`);
+    localStorage.setItem('userEmail', normalizedUser.email);
+
+    dispatch({
+      type: AUTH_ACTIONS.LOAD_USER_SUCCESS,
+      payload: normalizedUser,
+    });
+  };
+
   const value = {
     ...state,
     login,
     register,
     logout,
     clearError,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

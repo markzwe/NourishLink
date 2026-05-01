@@ -81,7 +81,140 @@ const getClient = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: clientProfile
+      data: {
+        user: {
+          id: req.user._id,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName,
+          email: req.user.email,
+          role: req.user.role,
+        },
+        clientProfile: {
+          id: clientProfile._id,
+          userId: clientProfile.userId,
+          dateOfBirth: clientProfile.dateOfBirth,
+          householdSize: clientProfile.householdSize,
+          monthlyIncome: clientProfile.monthlyIncome,
+          address: clientProfile.address,
+          phone: clientProfile.phone,
+          preferredContactMethod: clientProfile.preferredContactMethod,
+          eligibilityStatus: clientProfile.eligibilityStatus,
+          applicationDate: clientProfile.applicationDate,
+          lastRenewalDate: clientProfile.lastRenewalDate,
+          notes: clientProfile.notes,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get current client profile
+// @route   GET /api/clients/me
+// @access  Private (Client)
+const getMyClientProfile = async (req, res, next) => {
+  try {
+    const clientProfile = await ClientProfile.findOne({ userId: req.user.id });
+
+    if (!clientProfile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Client profile not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: req.user._id,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName,
+          email: req.user.email,
+          role: req.user.role,
+        },
+        clientProfile: {
+          id: clientProfile._id,
+          userId: clientProfile.userId,
+          dateOfBirth: clientProfile.dateOfBirth,
+          householdSize: clientProfile.householdSize,
+          monthlyIncome: clientProfile.monthlyIncome,
+          address: clientProfile.address,
+          phone: clientProfile.phone,
+          preferredContactMethod: clientProfile.preferredContactMethod,
+          eligibilityStatus: clientProfile.eligibilityStatus,
+          applicationDate: clientProfile.applicationDate,
+          lastRenewalDate: clientProfile.lastRenewalDate,
+          notes: clientProfile.notes,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update current client profile
+// @route   PATCH /api/clients/me
+// @access  Private (Client)
+const updateMyClientProfile = async (req, res, next) => {
+  try {
+    const { firstName, lastName, email, ...profileData } = req.body;
+
+    let clientProfile = await ClientProfile.findOne({ userId: req.user.id });
+
+    const userUpdates = {};
+    if (firstName) userUpdates.firstName = firstName;
+    if (lastName) userUpdates.lastName = lastName;
+    if (email) userUpdates.email = email;
+
+    let updatedUser = req.user;
+    if (Object.keys(userUpdates).length > 0) {
+      updatedUser = await User.findByIdAndUpdate(req.user.id, userUpdates, {
+        new: true,
+        runValidators: true,
+      });
+    }
+
+    if (!clientProfile) {
+      clientProfile = await ClientProfile.create({
+        userId: req.user.id,
+        ...profileData,
+      });
+    } else {
+      clientProfile = await ClientProfile.findByIdAndUpdate(
+        clientProfile._id,
+        profileData,
+        { new: true, runValidators: true }
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: updatedUser._id,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          email: updatedUser.email,
+          role: updatedUser.role,
+        },
+        clientProfile: {
+          id: clientProfile._id,
+          userId: clientProfile.userId,
+          dateOfBirth: clientProfile.dateOfBirth,
+          householdSize: clientProfile.householdSize,
+          monthlyIncome: clientProfile.monthlyIncome,
+          address: clientProfile.address,
+          phone: clientProfile.phone,
+          preferredContactMethod: clientProfile.preferredContactMethod,
+          eligibilityStatus: clientProfile.eligibilityStatus,
+          applicationDate: clientProfile.applicationDate,
+          lastRenewalDate: clientProfile.lastRenewalDate,
+          notes: clientProfile.notes,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -180,7 +313,9 @@ const updateEligibility = async (req, res, next) => {
 module.exports = {
   createClient,
   getClient,
+  getMyClientProfile,
   updateClient,
+  updateMyClientProfile,
   getPendingClients,
   updateEligibility,
 };

@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { authAPI } from '../../api/auth';
+import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { user, login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState('');
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const {
     register,
@@ -19,28 +24,19 @@ const Login = () => {
     setLoginError('');
 
     try {
-      // Call the actual API
-      const response = await authAPI.login({
+      const result = await login({
         email: data.email,
-        password: data.password
+        password: data.password,
       });
-      
-      if (response.data.success) {
-        const user = response.data.user;
-        // Store user info in localStorage
-        localStorage.setItem('userRole', user.role);
-        localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
-        localStorage.setItem('userEmail', user.email);
-        localStorage.setItem('userId', user.id);
 
-        // Navigate to dashboard (redirects based on role)
+      if (result.success) {
         navigateToDashboard();
       } else {
-        setLoginError(response.data.message || 'Login failed');
+        setLoginError(result.error || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      setLoginError(error.response?.data?.message || 'Login failed. Please check your credentials.');
+      setLoginError(error?.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsSubmitting(false);
     }
@@ -54,7 +50,7 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-           Login
+            Login
           </h2>
         </div>
 
@@ -81,7 +77,7 @@ const Login = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
               )}
             </div>
-             {/* Password */}
+            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password

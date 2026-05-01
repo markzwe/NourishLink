@@ -41,14 +41,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/inventory', inventoryRoutes);
-app.use('/api', donationRoutes);
-app.use('/api', volunteerRoutes);
-app.use('/api/reports', reportRoutes);
-
-// API Routes
-app.use('/api/clients', clientRoutes);
-app.use('/api/appointments', appointmentRoutes);
-app.use('/api/inventory', inventoryRoutes);
 app.use('/api/donations', donationRoutes);
 app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/reports', reportRoutes);

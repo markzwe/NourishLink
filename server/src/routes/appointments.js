@@ -58,9 +58,9 @@ router.get('/my', authorize('client'), async (req, res, next) => {
 router.patch('/:id/cancel', authorize('client', 'staff'), async (req, res, next) => {
   try {
     const { cancellationReason } = req.body;
-    
+
     const appointment = await Appointment.findById(req.params.id);
-    
+
     if (!appointment) {
       return res.status(404).json({
         success: false,
@@ -79,6 +79,51 @@ router.patch('/:id/cancel', authorize('client', 'staff'), async (req, res, next)
     appointment.status = 'cancelled';
     appointment.cancelledAt = new Date();
     appointment.cancellationReason = cancellationReason;
+
+    await appointment.save();
+
+    res.status(200).json({
+      success: true,
+      data: appointment
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Update appointment
+// @route   PATCH /api/appointments/:id
+// @access  Private (Client/Staff)
+router.patch('/:id', authorize('client', 'staff'), async (req, res, next) => {
+  try {
+    const { appointmentDate, timeSlot, dietaryNotes } = req.body;
+
+    const appointment = await Appointment.findById(req.params.id);
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found'
+      });
+    }
+
+    if (req.user.role === 'client' && appointment.clientId.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to edit this appointment'
+      });
+    }
+
+    if (appointment.status !== 'scheduled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only scheduled appointments can be edited'
+      });
+    }
+
+    if (appointmentDate) appointment.appointmentDate = appointmentDate;
+    if (timeSlot) appointment.timeSlot = timeSlot;
+    if (dietaryNotes !== undefined) appointment.dietaryNotes = dietaryNotes;
 
     await appointment.save();
 

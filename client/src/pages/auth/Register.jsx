@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../api/auth';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [registerError, setRegisterError] = useState('');
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const {
     register,
@@ -32,7 +38,7 @@ const Register = () => {
         password: data.password,
         role: data.role
       });
-      
+
       if (response.data.success) {
         const user = response.data.user;
         // Store user info
@@ -40,9 +46,9 @@ const Register = () => {
         localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
         localStorage.setItem('userEmail', user.email);
         localStorage.setItem('userId', user.id);
-        
+
         setSuccessMessage('Account created successfully! Redirecting to dashboard...');
-        
+
         // Redirect after short delay
         setTimeout(() => {
           navigate('/dashboard');

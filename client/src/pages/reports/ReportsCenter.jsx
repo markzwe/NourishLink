@@ -109,7 +109,6 @@ const ReportsCenter = () => {
           </div>
         )}
       </div>
-
       {/* Date Range Selector */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Report Period</h2>
@@ -145,7 +144,6 @@ const ReportsCenter = () => {
           </div>
         </div>
       </div>
-
       {/* Report Types Grid */}
       {!selectedReport ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -172,7 +170,7 @@ const ReportsCenter = () => {
         </div>
       ) : (
         /* Report Display */
-        <div className="space-y-6">
+        (<div className="space-y-6">
           {/* Report Header */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-start mb-4">
@@ -211,7 +209,6 @@ const ReportsCenter = () => {
               </div>
             </div>
           </div>
-
           {/* Report Content */}
           <div className="bg-white rounded-lg shadow-md p-6">
             {/* Summary Report */}
@@ -328,7 +325,7 @@ const ReportsCenter = () => {
               </div>
             )}
           </div>
-        </div>
+        </div>)
       )}
     </div>
   );

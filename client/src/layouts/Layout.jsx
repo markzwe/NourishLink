@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
 const Layout = ({ children }) => {
-  const [userRole, setUserRole] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading: authLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [windowWidth, setWindowWidth] = useState(0);
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1024
+  );
 
   useEffect(() => {
-    const role = localStorage.getItem('userRole');
-    setUserRole(role);
-
     const handleResize = () => {
       const width = window.innerWidth;
       setWindowWidth(width);
@@ -22,8 +21,6 @@ const Layout = ({ children }) => {
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    setIsLoading(false);
-
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -31,7 +28,7 @@ const Layout = ({ children }) => {
     setSidebarOpen((prevOpen) => !prevOpen);
   };
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -39,8 +36,9 @@ const Layout = ({ children }) => {
     );
   }
 
+  const userRole = user?.role;
   const isMobile = windowWidth < 768;
-  const mainContentClass = `flex-1 ${userRole && !isMobile ? 'ml-64' : ''}`;
+  const mainContentClass = `flex-1 ${userRole && !isMobile && sidebarOpen ? 'ml-64' : ''}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
