@@ -50,9 +50,9 @@ const createClientValidation = [
 
 // Routes
 router.post('/', authorize('client'), createClientValidation, createClient);
+router.get('/pending', authorize('staff'), getPendingClients);
 router.get('/:id', getClient);
 router.patch('/:id', updateClient);
-router.get('/pending', authorize('staff'), getPendingClients);
 router.patch('/:id/eligibility', authorize('staff'), updateEligibility);
 
 // Document upload route

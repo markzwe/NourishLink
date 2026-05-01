@@ -1,6 +1,5 @@
 const express = require('express');
-const { body } = require('express-validator');
-const { auth } = require('../middleware/auth');
+const { body, validationResult } = require('express-validator');
 const {
   register,
   login,
@@ -8,6 +7,19 @@ const {
 } = require('../controllers/authController');
 
 const router = express.Router();
+
+// Validation result checker middleware
+const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array()
+    });
+  }
+  next();
+};
 
 // Validation middleware
 const registerValidation = [
@@ -31,25 +43,23 @@ const registerValidation = [
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long'),
   body('role')
-    .isIn(['client', 'donor', 'volunteer'])
-    .withMessage('Role must be client, donor, or volunteer'),
+    .isIn(['client', 'donor', 'volunteer', 'staff'])
+    .withMessage('Role must be client, donor, volunteer, or staff'),
 ];
 
 const loginValidation = [
-  body('name')
-    .trim()
-    .notEmpty()
-    .withMessage('Name is required')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Name must be between 2 and 100 characters'),
-  body('role')
-    .isIn(['staff', 'client', 'donor', 'volunteer'])
-    .withMessage('Role must be staff, client, donor, or volunteer'),
+  body('email')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
 ];
 
 // Routes
-router.post('/register', registerValidation, register);
-router.post('/login', loginValidation, login);
-router.get('/me', auth, getMe);
+router.post('/register', [...registerValidation, validate], register);
+router.post('/login', [...loginValidation, validate], login);
+router.get('/me', getMe);
 
 module.exports = router;

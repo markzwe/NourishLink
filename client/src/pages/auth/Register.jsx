@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { authAPI } from '../../api/auth';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [registerError, setRegisterError] = useState('');
 
   const {
     register,
@@ -15,16 +18,46 @@ const Register = () => {
 
   const password = watch('password');
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setIsSubmitting(true);
     setSuccessMessage('');
+    setRegisterError('');
 
-    console.log('Dummy register form submitted', data);
-    setTimeout(() => {
-      setSuccessMessage('Registration submitted successfully. This is a dummy page.');
+    try {
+      // Call the actual API
+      const response = await authAPI.register({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+        role: data.role
+      });
+      
+      if (response.data.success) {
+        const user = response.data.user;
+        // Store user info
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userName', `${user.firstName} ${user.lastName}`);
+        localStorage.setItem('userEmail', user.email);
+        localStorage.setItem('userId', user.id);
+        
+        setSuccessMessage('Account created successfully! Redirecting to dashboard...');
+        
+        // Redirect after short delay
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
+      } else {
+        setRegisterError(response.data.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setRegisterError(error.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 500);
+    }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -118,6 +151,7 @@ const Register = () => {
                 <option value="client">Client</option>
                 <option value="donor">Donor</option>
                 <option value="volunteer">Volunteer</option>
+                <option value="staff">Staff</option>
               </select>
               {errors.role && (
                 <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
@@ -169,6 +203,12 @@ const Register = () => {
           {successMessage && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
               {successMessage}
+            </div>
+          )}
+
+          {registerError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {registerError}
             </div>
           )}
 
